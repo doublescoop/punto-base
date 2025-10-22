@@ -1,0 +1,84 @@
+import type { Metadata } from "next";
+import { Inter, Source_Code_Pro, Xanh_Mono as fontMono } from "next/font/google";
+import { SafeArea } from "@coinbase/onchainkit/minikit";
+import { minikitConfig } from "@/minikit.config";
+import { RootProvider } from "./rootProvider";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { Toaster } from "@/components/ui/sonner";
+import { cn } from "@/components/ui/utils";
+import "./globals.css";
+
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: minikitConfig.miniapp.name,
+    description: minikitConfig.miniapp.description,
+    other: {
+      "fc:miniapp": JSON.stringify({
+        version: minikitConfig.miniapp.version,
+        imageUrl: minikitConfig.miniapp.heroImageUrl,
+        button: {
+          title: `Launch ${minikitConfig.miniapp.name}`,
+          action: {
+            name: `Launch ${minikitConfig.miniapp.name}`,
+            type: "launch_miniapp",
+          },
+        },
+      }),
+    },
+  };
+}
+
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+});
+
+const sourceCodePro = Source_Code_Pro({
+  variable: "--font-source-code-pro",
+  subsets: ["latin"],
+});
+
+
+const mono = fontMono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+  weight: ["400"],
+});
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <RootProvider>
+      <html lang="en" suppressHydrationWarning>
+        <head>
+          <link rel="icon" href="/favicon.ico" />
+        </head>
+        <body
+          className={cn(
+            "min-h-screen bg-background font-sans antialiased",
+            inter.variable,
+            sourceCodePro.variable,
+            mono.variable
+          )}
+        >
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <SafeArea>
+              <main className="container mx-auto">
+                {children}
+              </main>
+              <Toaster />
+            </SafeArea>
+          </ThemeProvider>
+        </body>
+      </html>
+    </RootProvider>
+  );
+}
