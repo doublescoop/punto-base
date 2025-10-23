@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, ArrowRight, Plus, X, Users, Check } from "lucide-react";
+import { SocialLayerEvent } from "@/types/event";
 
 type WizardStep = "event" | "topics" | "team" | "theme" | "treasury" | "review";
 
@@ -55,7 +56,7 @@ export default function NewIssueWizard() {
   const searchParams = useSearchParams();
   const [currentStep, setCurrentStep] = useState<WizardStep>("event");
   const [eventUrl, setEventUrl] = useState("");
-  const [scrapedEventData, setScrapedEventData] = useState<Record<string, unknown> | null>(null);
+  const [scrapedEventData, setScrapedEventData] = useState<SocialLayerEvent | null>(null);
   const [topics, setTopics] = useState<Topic[]>([
     { id: "1", title: "", slotsNeeded: 1, category: "picture" }
   ]);
@@ -176,13 +177,13 @@ export default function NewIssueWizard() {
                 <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
                   <h3 className="font-mono text-lg mb-2 text-green-800 dark:text-green-200">✅ Event Data Scraped Successfully</h3>
                   <p className="text-sm text-green-700 dark:text-green-300">
-                    Found: <strong>{scrapedEventData.title as string}</strong> on {scrapedEventData.date as string}
+                    Found: <strong>{scrapedEventData.title}</strong> on {scrapedEventData.date}, {scrapedEventData.time}
                   </p>
                   <p className="text-xs text-green-600 dark:text-green-400 mt-1">
-                    Organization: {(scrapedEventData.organization as any)?.name || 'Unknown'} • 
-                    Hosts: {(scrapedEventData.hosts as any[])?.length || 0} • 
-                    Location: {(scrapedEventData.location as any)?.name || 'Unknown'} • 
-                    Participants: {(scrapedEventData.participants as any[])?.length || 0}
+                    Organization: {scrapedEventData.organization?.name || 'Unknown'} • 
+                    Hosts: {scrapedEventData.hosts?.map(host => host.name).join(', ') || 'Unknown'} • 
+                    Location: {scrapedEventData.location?.name || 'Unknown'} • 
+                    Participants: {scrapedEventData.participantCount?.count || '?'}
                   </p>
                 </div>
                 

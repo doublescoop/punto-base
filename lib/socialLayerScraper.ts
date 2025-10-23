@@ -154,7 +154,9 @@ export class EventScraper {
       status: 'upcoming',
       content,
       participants,
-      participantCount: { count: participants.length },
+      participantCount: platform === 'luma' 
+        ? this.extractLumaParticipantCount(html)
+        : { count: participants.length },
       url,
       scrapedAt: new Date().toISOString(),
     };
@@ -614,19 +616,26 @@ export class EventScraper {
       const data = JSON.parse(nextDataMatch[1]);
       const eventData = data.props?.pageProps?.initialData?.data;
       
-      if (!eventData?.featured_guests) {
+      if (!eventData) {
         return [];
       }
 
       const participants: SocialLayerEvent['participants'] = [];
       
-      for (const guest of eventData.featured_guests) {
-        participants.push({
-          name: guest.name || 'Unknown',
-          profileUrl: guest.username ? `https://lu.ma/${guest.username}` : undefined,
-          avatar: guest.avatar_url,
-        });
+      // Extract from featured_guests (first few participants shown)
+      if (eventData.featured_guests) {
+        for (const guest of eventData.featured_guests) {
+          participants.push({
+            name: guest.name || 'Unknown',
+            profileUrl: guest.username ? `https://lu.ma/${guest.username}` : undefined,
+            avatar: guest.avatar_url,
+          });
+        }
       }
+
+      // Note: Luma doesn't provide full participant list in the JSON data
+      // We only get the featured_guests (first few) and the total count
+      // The full participant list would require additional API calls or pagination
 
       return participants;
     } catch (error) {
@@ -652,10 +661,38 @@ export class EventScraper {
 
       const geoInfo = eventData.event.geo_address_info;
       
+      // Handle obfuscated addresses (when "Register to See Address" is shown)
+      if (geoInfo.mode === 'obfuscated' && geoInfo.city_state) {
+        // Parse city_state like "Vancouver, British Columbia"
+        const cityStateParts = geoInfo.city_state.split(',').map(part => part.trim());
+        const city = cityStateParts[0] || '';
+        const region = cityStateParts[1] || '';
+        
+        return {
+          name: 'Register to See Address',
+          address: 'Register to See Address',
+          city,
+          region,
+          country: geoInfo.country || '',
+          coordinates: eventData.event.coordinate ? {
+            lat: eventData.event.coordinate.latitude,
+            lng: eventData.event.coordinate.longitude,
+          } : undefined,
+        };
+      }
+      
+      // Handle normal addresses with full details
+      let city = geoInfo.city || '';
+      
+      // If city is null/empty but address contains city names, try to extract them
+      if (!city && geoInfo.address) {
+        city = this.extractCityFromAddress(geoInfo.address);
+      }
+      
       return {
         name: geoInfo.address || '',
         address: geoInfo.full_address || '',
-        city: geoInfo.city || '',
+        city,
         region: geoInfo.region || '',
         country: geoInfo.country || '',
         coordinates: eventData.event.coordinate ? {
@@ -787,6 +824,108 @@ export class EventScraper {
       console.warn('Failed to extract Luma date/time:', error);
       return { date: '', time: '', timezone: '' };
     }
+  }
+
+  private static extractLumaParticipantCount(html: string): { count: number } {
+    try {
+      // Extract JSON data from __NEXT_DATA__ script tag
+      const nextDataMatch = html.match(/<script id="__NEXT_DATA__" type="application\/json">([\s\S]*?)<\/script>/);
+      if (!nextDataMatch) {
+        return { count: 0 };
+      }
+
+      const data = JSON.parse(nextDataMatch[1]);
+      const eventData = data.props?.pageProps?.initialData?.data;
+      
+      if (!eventData) {
+        return { count: 0 };
+      }
+
+      // Look for guest_count in the event data
+      const guestCount = eventData.guest_count || 0;
+      
+      return { count: guestCount };
+    } catch (error) {
+      console.warn('Failed to extract Luma participant count:', error);
+      return { count: 0 };
+    }
+  }
+
+  private static extractCityFromAddress(address: string): string {
+    if (!address) return '';
+    
+    const addressLower = address.toLowerCase();
+    
+    // Common city name patterns and their proper names
+    const cityPatterns = [
+      // Major cities with common variations
+      { patterns: ['bangkok'], name: 'Bangkok' },
+      { patterns: ['new york', 'nyc', 'ny '], name: 'New York' },
+      { patterns: ['london'], name: 'London' },
+      { patterns: ['paris'], name: 'Paris' },
+      { patterns: ['tokyo'], name: 'Tokyo' },
+      { patterns: ['singapore'], name: 'Singapore' },
+      { patterns: ['berlin'], name: 'Berlin' },
+      { patterns: ['madrid'], name: 'Madrid' },
+      { patterns: ['rome'], name: 'Rome' },
+      { patterns: ['amsterdam'], name: 'Amsterdam' },
+      { patterns: ['vienna'], name: 'Vienna' },
+      { patterns: ['prague'], name: 'Prague' },
+      { patterns: ['budapest'], name: 'Budapest' },
+      { patterns: ['warsaw'], name: 'Warsaw' },
+      { patterns: ['moscow'], name: 'Moscow' },
+      { patterns: ['istanbul'], name: 'Istanbul' },
+      { patterns: ['dubai'], name: 'Dubai' },
+      { patterns: ['mumbai', 'bombay'], name: 'Mumbai' },
+      { patterns: ['delhi', 'new delhi'], name: 'Delhi' },
+      { patterns: ['bangalore', 'bengaluru'], name: 'Bangalore' },
+      { patterns: ['shanghai'], name: 'Shanghai' },
+      { patterns: ['beijing', 'peking'], name: 'Beijing' },
+      { patterns: ['hong kong'], name: 'Hong Kong' },
+      { patterns: ['seoul'], name: 'Seoul' },
+      { patterns: ['sydney'], name: 'Sydney' },
+      { patterns: ['melbourne'], name: 'Melbourne' },
+      { patterns: ['toronto'], name: 'Toronto' },
+      { patterns: ['vancouver'], name: 'Vancouver' },
+      { patterns: ['montreal', 'montréal'], name: 'Montreal' },
+      { patterns: ['mexico city', 'mexico'], name: 'Mexico City' },
+      { patterns: ['são paulo', 'sao paulo'], name: 'São Paulo' },
+      { patterns: ['rio de janeiro', 'rio'], name: 'Rio de Janeiro' },
+      { patterns: ['buenos aires'], name: 'Buenos Aires' },
+      { patterns: ['san martín de los andes', 'san martin de los andes'], name: 'San Martín de los Andes' },
+      { patterns: ['bariloche', 'san carlos de bariloche'], name: 'Bariloche' },
+      { patterns: ['cairo'], name: 'Cairo' },
+      { patterns: ['johannesburg'], name: 'Johannesburg' },
+      { patterns: ['cape town'], name: 'Cape Town' },
+      { patterns: ['lagos'], name: 'Lagos' },
+      { patterns: ['nairobi'], name: 'Nairobi' },
+    ];
+    
+    // Check each city pattern
+    for (const city of cityPatterns) {
+      for (const pattern of city.patterns) {
+        if (addressLower.includes(pattern)) {
+          return city.name;
+        }
+      }
+    }
+    
+    // If no pattern matches, try to extract the first word that looks like a city
+    // This is a fallback for cities not in our list
+    const words = address.split(/[,\s]+/).filter(word => word.length > 2);
+    for (const word of words) {
+      // Skip common non-city words
+      if (['street', 'avenue', 'road', 'boulevard', 'drive', 'lane', 'way', 'place', 'court', 'circle', 'square', 'plaza', 'center', 'centre', 'mall', 'building', 'tower', 'hotel', 'restaurant', 'cafe', 'bar', 'pub', 'club', 'house', 'hall', 'theater', 'theatre', 'museum', 'gallery', 'library', 'school', 'university', 'college', 'hospital', 'clinic', 'office', 'center', 'centre', 'park', 'garden', 'plaza', 'square'].includes(word.toLowerCase())) {
+        continue;
+      }
+      
+      // If the word is capitalized and not a number, it might be a city
+      if (word[0] === word[0].toUpperCase() && isNaN(Number(word))) {
+        return word;
+      }
+    }
+    
+    return '';
   }
 }
 
