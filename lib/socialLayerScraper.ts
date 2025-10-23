@@ -1,7 +1,8 @@
 import { SocialLayerEvent, EventScrapeResult } from '@/types/event';
 
-export class SocialLayerScraper {
-  private static readonly BASE_URL = 'https://app.sola.day';
+export class EventScraper {
+  private static readonly SOCIAL_LAYER_BASE_URL = 'https://app.sola.day';
+  private static readonly LUMA_BASE_URL = 'https://lu.ma';
   private static readonly USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
   static async scrapeEvent(url: string): Promise<EventScrapeResult> {
@@ -9,17 +10,23 @@ export class SocialLayerScraper {
     const scrapedAt = new Date().toISOString();
 
     try {
-      // Validate URL
-      if (!this.isValidSocialLayerUrl(url)) {
-        throw new Error('Invalid SocialLayer URL format');
+      // Validate URL and detect platform
+      const platform = this.detectPlatform(url);
+      if (platform === 'unknown') {
+        throw new Error('Unsupported event platform. Only SocialLayer and Luma are supported.');
       }
 
-      // First, fetch the content tab to get all basic event info
-      const contentUrl = url.includes('?') 
-        ? `${url}&tab=content` 
-        : `${url}?tab=content`;
+      // Platform-specific URL handling
+      let fetchUrl = url;
+      if (platform === 'sociallayer') {
+        // For SocialLayer, fetch the content tab to get all basic event info
+        fetchUrl = url.includes('?') 
+          ? `${url}&tab=content` 
+          : `${url}?tab=content`;
+      }
+      // For Luma, use the original URL
 
-      const response = await fetch(contentUrl, {
+      const response = await fetch(fetchUrl, {
         headers: {
           'User-Agent': this.USER_AGENT,
           'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
@@ -37,7 +44,7 @@ export class SocialLayerScraper {
       const html = await response.text();
 
           // Extract event data using regex patterns
-          const eventData = await this.extractEventData(html, url);
+          const eventData = await this.extractEventData(html, url, platform);
 
       const processingTime = Date.now() - startTime;
 
@@ -65,16 +72,26 @@ export class SocialLayerScraper {
     }
   }
 
-  private static isValidSocialLayerUrl(url: string): boolean {
+  private static detectPlatform(url: string): 'sociallayer' | 'luma' | 'unknown' {
     try {
       const urlObj = new URL(url);
-      return urlObj.hostname === 'app.sola.day' && urlObj.pathname.startsWith('/event/detail/');
+      if (urlObj.hostname === 'app.sola.day' && urlObj.pathname.startsWith('/event/detail/')) {
+        return 'sociallayer';
+      } else if (urlObj.hostname === 'lu.ma' || urlObj.hostname === 'luma.com') {
+        return 'luma';
+      }
+      return 'unknown';
     } catch {
-      return false;
+      return 'unknown';
     }
   }
 
-  private static async extractEventData(html: string, url: string): Promise<SocialLayerEvent> {
+  private static isValidEventUrl(url: string): boolean {
+    const platform = this.detectPlatform(url);
+    return platform !== 'unknown';
+  }
+
+  private static async extractEventData(html: string, url: string, platform: 'sociallayer' | 'luma'): Promise<SocialLayerEvent> {
     // Extract event ID from URL
     const eventId = this.extractEventId(url);
 
@@ -84,26 +101,42 @@ export class SocialLayerScraper {
     // Extract description from meta tags
     const description = this.extractDescription(html);
 
-    // Extract date and time from visible HTML
-    const { date, time, timezone } = this.extractDateTime(html);
+    // Extract date and time based on platform
+    const { date, time, timezone } = platform === 'luma' 
+      ? this.extractLumaDateTime(html)
+      : this.extractDateTime(html);
 
-    // Extract location from visible HTML
-    const location = this.extractLocation(html);
+    // Extract location based on platform
+    const location = platform === 'luma' 
+      ? this.extractLumaLocation(html)
+      : this.extractLocation(html);
 
-        // Extract organization from visible HTML
-        const organization = this.extractOrganization(html);
+    // Extract organization based on platform
+    const organization = platform === 'luma' 
+      ? this.extractLumaOrganization(html)
+      : this.extractOrganization(html);
 
-        // Extract hosts from visible HTML
-        const hosts = this.extractHosts(html);
+    // Extract hosts based on platform
+    const hosts = platform === 'luma' 
+      ? this.extractLumaHosts(html)
+      : this.extractHosts(html);
 
     // Extract tags from visible HTML
     const tags = this.extractTags(html);
 
-    // Extract content from the already fetched content tab HTML
-    const content = this.extractContent(html);
+    // Extract content and participants based on platform
+    let content: SocialLayerEvent['content'];
+    let participants: SocialLayerEvent['participants'];
 
-    // Extract participants (requires separate API call to participants tab)
-    const participants = await this.extractParticipants(url);
+    if (platform === 'sociallayer') {
+      // For SocialLayer, content is already in the HTML, participants need separate fetch
+      content = this.extractContent(html);
+      participants = await this.extractParticipants(url);
+    } else {
+      // For Luma, extract everything from the main page
+      content = this.extractLumaContent(html);
+      participants = this.extractLumaParticipants(html);
+    }
 
     return {
       id: eventId,
@@ -514,4 +547,246 @@ export class SocialLayerScraper {
       return [];
     }
   }
+
+  // Luma-specific extraction methods
+  private static extractLumaContent(html: string): SocialLayerEvent['content'] {
+    try {
+      // Extract JSON data from __NEXT_DATA__ script tag
+      const nextDataMatch = html.match(/<script id="__NEXT_DATA__" type="application\/json">([\s\S]*?)<\/script>/);
+      if (!nextDataMatch) {
+        return { description: '', media: [], comments: 0 };
+      }
+
+      const data = JSON.parse(nextDataMatch[1]);
+      const eventData = data.props?.pageProps?.initialData?.data;
+      
+      if (!eventData) {
+        return { description: '', media: [], comments: 0 };
+      }
+
+      // Extract description from description_mirror (ProseMirror format)
+      let description = '';
+      if (eventData.description_mirror?.content) {
+        description = this.extractLumaDescription(eventData.description_mirror.content);
+      }
+
+      return {
+        description,
+        media: [], // TODO: Extract media URLs if any
+        comments: 0, // Luma doesn't have comments in the same way
+      };
+    } catch (error) {
+      console.warn('Failed to extract Luma content:', error);
+      return { description: '', media: [], comments: 0 };
+    }
+  }
+
+  private static extractLumaDescription(content: Array<{ type: string; content?: Array<{ type: string; text?: string }> }>): string {
+    if (!Array.isArray(content)) return '';
+    
+    const paragraphs: string[] = [];
+    
+    for (const block of content) {
+      if (block.type === 'paragraph' && block.content) {
+        let paragraphText = '';
+        for (const textNode of block.content) {
+          if (textNode.type === 'text') {
+            paragraphText += textNode.text;
+          }
+        }
+        if (paragraphText.trim()) {
+          paragraphs.push(paragraphText.trim());
+        }
+      }
+    }
+    
+    return paragraphs.join('\n\n');
+  }
+
+  private static extractLumaParticipants(html: string): SocialLayerEvent['participants'] {
+    try {
+      // Extract JSON data from __NEXT_DATA__ script tag
+      const nextDataMatch = html.match(/<script id="__NEXT_DATA__" type="application\/json">([\s\S]*?)<\/script>/);
+      if (!nextDataMatch) {
+        return [];
+      }
+
+      const data = JSON.parse(nextDataMatch[1]);
+      const eventData = data.props?.pageProps?.initialData?.data;
+      
+      if (!eventData?.featured_guests) {
+        return [];
+      }
+
+      const participants: SocialLayerEvent['participants'] = [];
+      
+      for (const guest of eventData.featured_guests) {
+        participants.push({
+          name: guest.name || 'Unknown',
+          profileUrl: guest.username ? `https://lu.ma/${guest.username}` : undefined,
+          avatar: guest.avatar_url,
+        });
+      }
+
+      return participants;
+    } catch (error) {
+      console.warn('Failed to extract Luma participants:', error);
+      return [];
+    }
+  }
+
+  private static extractLumaLocation(html: string): SocialLayerEvent['location'] {
+    try {
+      // Extract JSON data from __NEXT_DATA__ script tag
+      const nextDataMatch = html.match(/<script id="__NEXT_DATA__" type="application\/json">([\s\S]*?)<\/script>/);
+      if (!nextDataMatch) {
+        return { name: '', address: '', city: '', region: '', country: '' };
+      }
+
+      const data = JSON.parse(nextDataMatch[1]);
+      const eventData = data.props?.pageProps?.initialData?.data;
+      
+      if (!eventData?.event?.geo_address_info) {
+        return { name: '', address: '', city: '', region: '', country: '' };
+      }
+
+      const geoInfo = eventData.event.geo_address_info;
+      
+      return {
+        name: geoInfo.address || '',
+        address: geoInfo.full_address || '',
+        city: geoInfo.city || '',
+        region: geoInfo.region || '',
+        country: geoInfo.country || '',
+        coordinates: eventData.event.coordinate ? {
+          lat: eventData.event.coordinate.latitude,
+          lng: eventData.event.coordinate.longitude,
+        } : undefined,
+      };
+    } catch (error) {
+      console.warn('Failed to extract Luma location:', error);
+      return { name: '', address: '', city: '', region: '', country: '' };
+    }
+  }
+
+  private static extractLumaHosts(html: string): SocialLayerEvent['hosts'] {
+    try {
+      // Extract JSON data from __NEXT_DATA__ script tag
+      const nextDataMatch = html.match(/<script id="__NEXT_DATA__" type="application\/json">([\s\S]*?)<\/script>/);
+      if (!nextDataMatch) {
+        return [];
+      }
+
+      const data = JSON.parse(nextDataMatch[1]);
+      const eventData = data.props?.pageProps?.initialData?.data;
+      
+      if (!eventData?.hosts) {
+        return [];
+      }
+
+      const hosts: SocialLayerEvent['hosts'] = [];
+      
+      for (const host of eventData.hosts) {
+        hosts.push({
+          name: host.name || 'Unknown',
+          role: 'host', // Luma doesn't distinguish between host/co-host in the same way
+          profileUrl: host.username ? `https://lu.ma/${host.username}` : undefined,
+        });
+      }
+
+      return hosts;
+    } catch (error) {
+      console.warn('Failed to extract Luma hosts:', error);
+      return [];
+    }
+  }
+
+  private static extractLumaOrganization(html: string): SocialLayerEvent['organization'] {
+    try {
+      // Extract JSON data from __NEXT_DATA__ script tag
+      const nextDataMatch = html.match(/<script id="__NEXT_DATA__" type="application\/json">([\s\S]*?)<\/script>/);
+      if (!nextDataMatch) {
+        return { name: 'Unknown Organization', type: 'unknown' };
+      }
+
+      const data = JSON.parse(nextDataMatch[1]);
+      const eventData = data.props?.pageProps?.initialData?.data;
+      
+      if (!eventData?.calendar) {
+        return { name: 'Unknown Organization', type: 'unknown' };
+      }
+
+      const calendar = eventData.calendar;
+      
+      // Determine organization type based on calendar data
+      let type: 'company' | 'team' | 'residency' | 'unknown' = 'unknown';
+      if (calendar.name.toLowerCase().includes('residency')) {
+        type = 'residency';
+      } else if (calendar.name.toLowerCase().includes('club') || calendar.name.toLowerCase().includes('meetup')) {
+        type = 'team';
+      } else if (calendar.is_personal === false) {
+        type = 'company';
+      }
+      
+      return {
+        name: calendar.name || 'Unknown Organization',
+        type,
+      };
+    } catch (error) {
+      console.warn('Failed to extract Luma organization:', error);
+      return { name: 'Unknown Organization', type: 'unknown' };
+    }
+  }
+
+  private static extractLumaDateTime(html: string): { date: string; time: string; timezone: string } {
+    try {
+      // Extract JSON data from __NEXT_DATA__ script tag
+      const nextDataMatch = html.match(/<script id="__NEXT_DATA__" type="application\/json">([\s\S]*?)<\/script>/);
+      if (!nextDataMatch) {
+        return { date: '', time: '', timezone: '' };
+      }
+
+      const data = JSON.parse(nextDataMatch[1]);
+      const eventData = data.props?.pageProps?.initialData?.data;
+      
+      if (!eventData?.event) {
+        return { date: '', time: '', timezone: '' };
+      }
+
+      const event = eventData.event;
+      const startAt = new Date(event.start_at);
+      const endAt = new Date(event.end_at);
+      
+      // Format date
+      const date = startAt.toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+      
+      // Format time
+      const startTime = startAt.toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit',
+        hour12: true 
+      });
+      const endTime = endAt.toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit',
+        hour12: true 
+      });
+      const time = `${startTime} - ${endTime}`;
+      
+      return {
+        date,
+        time,
+        timezone: event.timezone || 'UTC',
+      };
+    } catch (error) {
+      console.warn('Failed to extract Luma date/time:', error);
+      return { date: '', time: '', timezone: '' };
+    }
+  }
 }
+

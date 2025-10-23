@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { SocialLayerScraper } from '@/lib/socialLayerScraper';
+import { EventScraper } from '@/lib/socialLayerScraper';
 import { EventScrapeRequest, EventScrapeResult } from '@/types/event';
 
 export async function POST(request: NextRequest) {
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Scrape the event
-    const result = await SocialLayerScraper.scrapeEvent(body.url);
+    const result = await EventScraper.scrapeEvent(body.url);
 
     if (!result.success) {
       return NextResponse.json(result, { status: 500 });
@@ -103,7 +103,7 @@ export async function GET(request: NextRequest) {
   }
 
   // Scrape the event
-  const result = await SocialLayerScraper.scrapeEvent(url);
+  const result = await EventScraper.scrapeEvent(url);
 
   if (!result.success) {
     return NextResponse.json(result, { status: 500 });
