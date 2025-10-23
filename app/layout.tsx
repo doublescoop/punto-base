@@ -68,7 +68,7 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <SafeArea>
-              <main className="container mx-auto">
+              <main>
                 {children}
               </main>
               <Toaster />

@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { Wallet } from "@coinbase/onchainkit/wallet";
 import { useMiniKit } from "@coinbase/onchainkit/minikit";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { OpenCallCard } from "../../components/OpenCallCard";
 import { SubmissionDetail } from "../../components/SubmissionDetail";
 import { SubmissionForm } from "../../components/SubmissionForm";
@@ -170,6 +170,7 @@ const mockSubmissions: { [key: string]: Submission[] } = {
 export default function OpenCallsPage() {
   const { setMiniAppReady, isMiniAppReady } = useMiniKit();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     if (!isMiniAppReady) {
@@ -185,6 +186,9 @@ export default function OpenCallsPage() {
   const [filterHighBounty, setFilterHighBounty] = useState(false);
   const [filterThisWeek, setFilterThisWeek] = useState(false);
   const [isAuthenticated] = useState(true); // Simulating logged in user
+  
+  // Get magazine filter from URL
+  const magazineFilter = searchParams.get('magazine');
 
   // Get unique magazines and formats
   const magazines = ["all", ...Array.from(new Set(openCalls.map((call) => call.magazine)))];
@@ -223,9 +227,17 @@ export default function OpenCallsPage() {
         }
       }
 
+      // URL magazine filter
+      if (magazineFilter) {
+        const magazineSlug = call.magazine.toLowerCase().replace(/\s+/g, '-');
+        if (magazineSlug !== magazineFilter && !call.magazine.toLowerCase().includes(magazineFilter.toLowerCase())) {
+          return false;
+        }
+      }
+
       return true;
     });
-  }, [selectedMagazine, selectedFormat, filterHighBounty, filterThisWeek]);
+  }, [selectedMagazine, selectedFormat, filterHighBounty, filterThisWeek, magazineFilter]);
 
   // Handle different views
   if (view === "submission" && selectedCall) {
@@ -268,10 +280,10 @@ export default function OpenCallsPage() {
                 >
                   ← Back to Home
                 </button>
-                <h1 className="headline-bold text-foreground">OPEN CALLS</h1>
-                <p className="subtitle-artistic">
-                  submit your work, we write each line
-                </p>
+               <h1 className="headline-bold text-foreground">OPEN CALLS</h1>
+               <p className="subtitle-artistic">
+                 {magazineFilter ? `Open calls for ${magazineFilter.replace(/-/g, ' ')}` : 'submit your work, we write each line'}
+               </p>
                 <p className="text-clean text-lg text-muted-foreground max-w-md leading-relaxed">
                   Submit your work to independent magazines and publications. Get published and paid for your creative contributions.
                 </p>
