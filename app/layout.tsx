@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Source_Code_Pro, Xanh_Mono as fontMono } from "next/font/google";
+import { Inter, Source_Code_Pro } from "next/font/google";
 import { SafeArea } from "@coinbase/onchainkit/minikit";
 import { minikitConfig } from "@/minikit.config";
 import { RootProvider } from "./rootProvider";
@@ -39,11 +39,6 @@ const sourceCodePro = Source_Code_Pro({
 });
 
 
-const mono = fontMono({
-  subsets: ["latin"],
-  variable: "--font-mono",
-  weight: ["400"],
-});
 
 export default function RootLayout({
   children,
@@ -55,13 +50,15 @@ export default function RootLayout({
       <html lang="en" suppressHydrationWarning>
         <head>
           <link rel="icon" href="/favicon.ico" />
+          <link rel="preconnect" href="https://fonts.googleapis.com" />
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+          <link href="https://fonts.googleapis.com/css2?family=Mynerve&family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
         </head>
         <body
           className={cn(
             "min-h-screen bg-background font-sans antialiased",
             inter.variable,
-            sourceCodePro.variable,
-            mono.variable
+            sourceCodePro.variable
           )}
         >
           <ThemeProvider
