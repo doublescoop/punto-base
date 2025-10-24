@@ -17,9 +17,9 @@ type SubmissionStatus = "IN_REVIEW" | "ACCEPTED" | "PUBLISHED" | "PAID" | "REJEC
 // Mock user data - in reality this would come from API
 const mockUserData = {
   avatar: "",
-  displayName: "Alex Rivera",
+  displayName: "Frank Darabont",
   wallet: "0x742d...4a8c",
-  email: "alex@example.com",
+  email: "frankdd@example.com",
   roles: {
     hasSubmissions: true,
     isFounder: false,
