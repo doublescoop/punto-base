@@ -1,14 +1,39 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Lock, Copy, FileText, BookOpen, Users, Briefcase, ArrowRight, Plus, TrendingUp, Clock, DollarSign, Settings } from "lucide-react";
 import { toast } from "sonner";
+import { useAccount } from "wagmi";
 import { SubmissionDetailDrawer } from "../../components/SubmissionDetailDrawer";
 import { LiquidGlass } from "../../components/LiquidGlass";
 
 // Types for the mock data
 type SubmissionStatus = "IN_REVIEW" | "ACCEPTED" | "PUBLISHED" | "PAID" | "REJECTED";
+
+// Types for real magazine data
+interface MagazineIssue {
+  id: string;
+  issue_number: number;
+  title: string | null;
+  status: string;
+  published_at: string | null;
+  submission_count: number;
+  accepted_count: number;
+  pending_payment_amount: number;
+}
+
+interface MagazineWithStats {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  status: string;
+  treasury_address: string;
+  default_bounty_amount: number;
+  created_at: string;
+  issues: MagazineIssue[];
+}
 
 // Mock user data - in reality this would come from API
 const mockUserData = {
@@ -113,8 +138,27 @@ const mockUserData = {
 
 export default function ProfilePage() {
   const router = useRouter();
+  const { address } = useAccount();
   const [activeTab, setActiveTab] = useState<"contributions" | "founder" | "editor" | "library">("contributions");
   const [selectedSubmission, setSelectedSubmission] = useState<typeof mockUserData.submissions[0] | null>(null);
+  const [magazines, setMagazines] = useState<MagazineWithStats[]>([]);
+  const [isLoadingMagazines, setIsLoadingMagazines] = useState(false);
+
+  // Fetch founder's magazines
+  useEffect(() => {
+    if (address && activeTab === "founder") {
+      setIsLoadingMagazines(true);
+      fetch(`/api/users/${address}/magazines`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            setMagazines(data.magazines);
+          }
+        })
+        .catch((error) => console.error("Failed to fetch magazines:", error))
+        .finally(() => setIsLoadingMagazines(false));
+    }
+  }, [address, activeTab]);
 
   const tabs = [
     {
@@ -460,7 +504,7 @@ I'll continue from where I left off, completing the profile page implementation:
         )}
 
         {/* Founder Tab */}
-        {activeTab === "founder" && !tabs[1].locked && (
+        {activeTab === "founder" && (
           <div className="space-y-12">
             {/* Your Magazines */}
             <section className="space-y-6">
@@ -477,79 +521,88 @@ I'll continue from where I left off, completing the profile page implementation:
                 </button>
               </div>
 
-              {mockUserData.magazines.length > 0 ? (
+              {isLoadingMagazines ? (
+                <div className="bg-muted/30 backdrop-blur-sm p-12 text-center">
+                  <div className="w-8 h-8 border-2 border-accent/30 border-t-accent rounded-full animate-spin mx-auto mb-4" />
+                  <p className="text-muted-foreground">Loading your magazines...</p>
+                </div>
+              ) : magazines.length > 0 ? (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {mockUserData.magazines.map((magazine) => (
-                    <div key={magazine.id} className="bg-card/50 backdrop-blur-sm p-6 rounded-lg hover:bg-card/80 transition-all">
-                      <div className="flex items-start justify-between mb-4">
-                        <div>
-                          <h3 className="font-mono text-xl mb-1">{magazine.name}</h3>
-                          <div className="flex items-center gap-2">
-                            <span className={`px-2 py-1 text-xs rounded-full ${
-                              magazine.status === "active" 
-                                ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
-                                : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
-                            }`}>
-                              {magazine.status}
-                            </span>
+                  {magazines.map((magazine) => {
+                    const latestIssue = magazine.issues[0];
+                    const totalSubmissions = magazine.issues.reduce((sum, issue) => sum + issue.submission_count, 0);
+                    const totalAccepted = magazine.issues.reduce((sum, issue) => sum + issue.accepted_count, 0);
+                    const totalPending = magazine.issues.reduce((sum, issue) => sum + issue.pending_payment_amount, 0);
+
+                    return (
+                      <div key={magazine.id} className="bg-card/50 backdrop-blur-sm p-6 rounded-lg hover:bg-card/80 transition-all">
+                        <div className="flex items-start justify-between mb-4">
+                          <div>
+                            <h3 className="font-mono text-xl mb-1">{magazine.name}</h3>
+                            <p className="text-xs text-muted-foreground mb-2">{magazine.description}</p>
+                            <div className="flex items-center gap-2">
+                              <span className={`px-2 py-1 text-xs rounded-full ${
+                                latestIssue?.status === "OPEN" 
+                                  ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
+                                  : latestIssue?.status === "CLOSED"
+                                  ? "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400"
+                                  : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
+                              }`}>
+                                {latestIssue?.status || "No Issues"}
+                              </span>
+                            </div>
                           </div>
                         </div>
-                        <button
-                          onClick={() => router.push(`/${magazine.name.toLowerCase().replace(/\s+/g, '-')}/settings`)}
-                          className="p-2 hover:bg-muted/50 rounded-lg transition-colors"
-                        >
-                          <Settings className="w-4 h-4" />
-                        </button>
-                      </div>
 
-                      <div className="grid grid-cols-2 gap-4 mb-4">
-                        <div className="text-center">
-                          <p className="text-2xl font-mono text-accent">{magazine.issues}</p>
-                          <p className="text-xs text-muted-foreground">Issues</p>
+                        <div className="grid grid-cols-3 gap-4 mb-4">
+                          <div className="text-center">
+                            <p className="text-2xl font-mono text-accent">{magazine.issues.length}</p>
+                            <p className="text-xs text-muted-foreground">Issues</p>
+                          </div>
+                          <div className="text-center">
+                            <p className="text-2xl font-mono text-accent">{totalSubmissions}</p>
+                            <p className="text-xs text-muted-foreground">Submissions</p>
+                          </div>
+                          <div className="text-center">
+                            <p className="text-2xl font-mono text-accent">{totalAccepted}</p>
+                            <p className="text-xs text-muted-foreground">Accepted</p>
+                          </div>
                         </div>
-                        <div className="text-center">
-                          <p className="text-2xl font-mono text-accent">{magazine.submissions}</p>
-                          <p className="text-xs text-muted-foreground">Submissions</p>
-                        </div>
-                      </div>
 
-                      <div className="space-y-3 mb-6">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Deadline</span>
-                          <span>{magazine.deadline}</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Treasury</span>
-                          <span className="text-accent">{magazine.treasury}</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Required Funds</span>
-                          <span>{magazine.requiredFunds}</span>
-                        </div>
-                        {magazine.shortfall && (
-                          <div className="flex justify-between text-sm text-red-500">
-                            <span>Shortfall</span>
-                            <span>{magazine.shortfall}</span>
+                        {totalPending > 0 && (
+                          <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 p-3 rounded-lg mb-4">
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="text-orange-800 dark:text-orange-400">Pending Payouts</span>
+                              <span className="font-mono font-semibold text-orange-800 dark:text-orange-400">
+                                ${(totalPending / 100).toFixed(2)} USDC
+                              </span>
+                            </div>
                           </div>
                         )}
-                      </div>
 
-                      <div className="flex gap-3">
-                        <button
-                          onClick={() => router.push(`/${magazine.name.toLowerCase().replace(/\s+/g, '-')}/board`)}
-                          className="flex-1 px-4 py-2 bg-accent/10 hover:bg-accent hover:text-accent-foreground transition-colors rounded-lg text-sm"
-                        >
-                          Manage Issue
-                        </button>
-                        <button
-                          onClick={() => router.push(`/${magazine.name.toLowerCase().replace(/\s+/g, '-')}/settings`)}
-                          className="px-4 py-2 border border-border hover:border-accent transition-colors rounded-lg text-sm"
-                        >
-                          Settings
-                        </button>
+                        <div className="space-y-2 mb-4">
+                          {latestIssue && (
+                            <button
+                              onClick={() => router.push(`/${magazine.slug}/issue/${latestIssue.issue_number}/review`)}
+                              className="w-full px-4 py-3 bg-accent/10 hover:bg-accent hover:text-accent-foreground transition-colors rounded-lg text-sm flex items-center justify-between"
+                            >
+                              <span>Review Submissions</span>
+                              <span className="font-mono">{latestIssue.submission_count}</span>
+                            </button>
+                          )}
+                          {totalPending > 0 && latestIssue && (
+                            <button
+                              onClick={() => router.push(`/${magazine.slug}/issue/${latestIssue.issue_number}/pay`)}
+                              className="w-full px-4 py-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors rounded-lg text-sm flex items-center justify-between"
+                            >
+                              <span>Pay Winners →</span>
+                              <span className="font-mono">${(totalPending / 100).toFixed(2)}</span>
+                            </button>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="bg-muted/30 backdrop-blur-sm p-12 text-center space-y-4 rounded-lg">

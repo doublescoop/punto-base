@@ -8,9 +8,10 @@ type SubmissionRow = Database['public']['Tables']['submissions']['Row'];
 
 interface SubmissionReviewCardProps {
   submission: SubmissionRow;
-  reviewerId: string; // UUID of current reviewer
-  onAccept?: (submissionId: string) => void;
-  onReject?: (submissionId: string) => void;
+  reviewerId?: string; // UUID of current reviewer (optional for simpler usage)
+  onAccept?: () => void;
+  onReject?: () => void;
+  onHmm?: () => void;
   showVoteButtons?: boolean;
   isReviewing?: boolean; // true = founder/editor reviewing, false = public voting
 }
@@ -20,6 +21,7 @@ export function SubmissionReviewCard({
   reviewerId,
   onAccept,
   onReject,
+  onHmm,
   showVoteButtons = true,
   isReviewing = false,
 }: SubmissionReviewCardProps) {
@@ -27,34 +29,21 @@ export function SubmissionReviewCard({
   const [localStatus, setLocalStatus] = useState(submission.status);
 
   const handleVote = async (decision: "ACCEPTED" | "REJECTED" | "hmm") => {
-    if (!reviewerId || !isReviewing || isProcessing) return;
-    if (decision === "hmm") return; // Skip neutral for now (can implement later)
+    if (isProcessing) return;
 
     setIsProcessing(true);
 
     try {
-      const response = await fetch(`/api/submissions/${submission.id}/status`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          status: decision,
-          reviewerId,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!data.success) {
-        throw new Error(data.error || "Failed to update submission");
-      }
-
-      setLocalStatus(decision);
-
-      // Call callbacks
+      // Call parent callbacks directly
       if (decision === "ACCEPTED" && onAccept) {
-        onAccept(submission.id);
+        await onAccept();
+        setLocalStatus("ACCEPTED");
       } else if (decision === "REJECTED" && onReject) {
-        onReject(submission.id);
+        await onReject();
+        setLocalStatus("REJECTED");
+      } else if (decision === "hmm" && onHmm) {
+        await onHmm();
+        setLocalStatus("UNDER_REVIEW");
       }
     } catch (error) {
       console.error("Error updating submission:", error);

@@ -204,6 +204,7 @@ function NewIssueWizardContent() {
   const [usedTemplateIndices, setUsedTemplateIndices] = useState<Set<number>>(new Set());
   const [isEditingEvent, setIsEditingEvent] = useState(false);
   const [publishDate, setPublishDate] = useState<string>("");
+  const [isCreatingMagazine, setIsCreatingMagazine] = useState(false);
 
   // Calculate total bounty amount for open call topics only (bounty × slots per topic)
   const totalTopicBounties = topics.reduce((sum, topic) => 
@@ -254,6 +255,87 @@ function NewIssueWizardContent() {
     { id: "team", title: "Team", icon: "👥" },
     { id: "review", title: "Review", icon: "✅" }
   ];
+
+  // Handler for creating magazine + issue
+  const handleCreateMagazine = async () => {
+    if (!address || !scrapedEventData || !publishDate) {
+      alert('Missing required data: wallet address, event data, or publish date');
+      return;
+    }
+
+    setIsCreatingMagazine(true);
+
+    try {
+      // Step 1: Get user ID from wallet address
+      const userResponse = await fetch(`/api/users/me?address=${address}`);
+      const userData = await userResponse.json();
+
+      if (!userData.success || !userData.user) {
+        throw new Error('Failed to fetch user data. Please connect your wallet.');
+      }
+
+      const userId = userData.user.id;
+
+      // Step 2: Create magazine
+      const magazineName = `${scrapedEventData.title} Zine`;
+      const magazineSlug = scrapedEventData.title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+
+      const magazinePayload = {
+        name: magazineName,
+        slug: magazineSlug,
+        description: scrapedEventData.description || `A collaborative zine from ${scrapedEventData.title}`,
+        founderId: userId,
+        coverImageUrl: scrapedEventData.content?.media?.[0] || null,
+        defaultBountyAmount: 100, // $1.00 in cents
+      };
+
+      const magazineResponse = await fetch('/api/magazines/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(magazinePayload),
+      });
+
+      const magazineData = await magazineResponse.json();
+
+      if (!magazineData.success || !magazineData.magazine) {
+        throw new Error(magazineData.error || 'Failed to create magazine');
+      }
+
+      const magazineId = magazineData.magazine.id;
+
+      // Step 3: Create issue
+      const issuePayload = {
+        issueNumber: 1,
+        title: `Issue #1: ${scrapedEventData.title}`,
+        description: `Post-event zine from ${scrapedEventData.title}`,
+        publishAt: new Date(publishDate).toISOString(),
+      };
+
+      const issueResponse = await fetch(`/api/magazines/${magazineId}/issues/create`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(issuePayload),
+      });
+
+      const issueData = await issueResponse.json();
+
+      if (!issueData.success || !issueData.issue) {
+        throw new Error(issueData.error || 'Failed to create issue');
+      }
+
+      // Step 4: Redirect to founder dashboard
+      alert('✅ Magazine created successfully!');
+      router.push('/profile?tab=founder');
+    } catch (error) {
+      console.error('Error creating magazine:', error);
+      alert(error instanceof Error ? error.message : 'Failed to create magazine. Please try again.');
+    } finally {
+      setIsCreatingMagazine(false);
+    }
+  };
 
   const addTopic = () => {
     const { template, usedIndex, resetUsed } = getRandomTopicTemplate(usedTemplateIndices);
@@ -1046,30 +1128,21 @@ function NewIssueWizardContent() {
 
             {currentStep === "review" ? (
               <button
-                onClick={() => {
-                  // TODO: Create the magazine issue with all data including publishDate
-                  // For now, redirect to success page with mock magazine ID and publish date
-                  const magazineId = "magazine-" + Date.now();
-                  const magazineData = {
-                    id: magazineId,
-                    publishDate: publishDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // Default to 7 days from now
-                    eventData: scrapedEventData,
-                    topics: topics,
-                    theme: selectedTheme,
-                    colors: selectedColors,
-                    team: team,
-                    treasury: magazineTreasury
-                  };
-                  
-                  // Store magazine data in localStorage for the success page to access
-                  localStorage.setItem('magazineData', JSON.stringify(magazineData));
-                  router.push(`/magazine/${magazineId}/success`);
-                }}
-                disabled={!publishDate}
+                onClick={handleCreateMagazine}
+                disabled={!publishDate || isCreatingMagazine || !address}
                 className="px-8 py-3 bg-accent text-accent-foreground hover:bg-accent/90 transition-colors rounded-lg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Check className="w-4 h-4" />
-                Create Magazine Issue
+                {isCreatingMagazine ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-accent-foreground/30 border-t-accent-foreground rounded-full animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    <Check className="w-4 h-4" />
+                    Create Magazine Issue
+                  </>
+                )}
               </button>
             ) : currentStep !== "event" ? (
               <button
