@@ -139,7 +139,7 @@ const mockUserData = {
 export default function ProfilePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { address } = useAccount();
+  const { address, isConnecting, isReconnecting } = useAccount();
   const [activeTab, setActiveTab] = useState<"contributions" | "founder" | "editor" | "library">("contributions");
   const [selectedSubmission, setSelectedSubmission] = useState<typeof mockUserData.submissions[0] | null>(null);
   const [magazines, setMagazines] = useState<MagazineWithStats[]>([]);
@@ -237,7 +237,24 @@ export default function ProfilePage() {
   const displayAddress = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : "Not connected";
   const displayName = address ? `User ${address.slice(0, 6)}` : "Connect Wallet";
 
-  // Show wallet connection prompt if no address
+  // Show loading while wallet is connecting/reconnecting
+  if (isConnecting || isReconnecting) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-6 max-w-md">
+          <div className="w-8 h-8 border-2 border-accent/30 border-t-accent rounded-full animate-spin mx-auto" />
+          <div className="space-y-2">
+            <h3 className="font-mono text-xl">Connecting Wallet...</h3>
+            <p className="text-muted-foreground">
+              Please wait while we connect to your wallet.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show wallet connection prompt if no address and not connecting
   if (!address) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">

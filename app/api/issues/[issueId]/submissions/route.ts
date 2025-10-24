@@ -25,7 +25,7 @@ export async function GET(
         users!submissions_author_id_fkey (id, wallet_address, display_name, avatar)
       `)
       .eq('issue_id', issueId)
-      .order('created_at', { ascending: false });
+      .order('submitted_at', { ascending: false });
 
     if (status) {
       query = query.eq('status', status);

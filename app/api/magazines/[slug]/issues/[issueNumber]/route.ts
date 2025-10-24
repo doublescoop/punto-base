@@ -3,14 +3,16 @@ import { supabaseAdmin } from '@/lib/supabase/client';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string; issueNumber: string } }
+  { params }: { params: Promise<{ slug: string; issueNumber: string }> }
 ) {
   try {
+    const { slug, issueNumber } = await params;
+    
     // Step 1: Get magazine by slug
     const { data: magazine, error: magazineError } = await supabaseAdmin
       .from('magazines')
       .select('id')
-      .eq('slug', params.slug)
+      .eq('slug', slug)
       .single();
 
     if (magazineError) {
@@ -32,7 +34,7 @@ export async function GET(
       .from('issues')
       .select('*')
       .eq('magazine_id', magazine.id)
-      .eq('issue_number', parseInt(params.issueNumber))
+      .eq('issue_number', parseInt(issueNumber))
       .single();
 
     if (issueError) {

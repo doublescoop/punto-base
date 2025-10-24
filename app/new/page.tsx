@@ -420,9 +420,13 @@ function NewIssueWizardContent() {
         }
       }
 
-      // Step 5: Redirect to founder dashboard
-      alert('✅ Magazine created successfully!');
-      router.push('/profile?tab=founder');
+      // Step 5: Redirect to success page with magazine details
+      const successUrl = new URL('/success', window.location.origin);
+      successUrl.searchParams.set('magazine', magazine.name);
+      successUrl.searchParams.set('issue', `Issue #1: ${scrapedEventData.title}`);
+      successUrl.searchParams.set('slug', actualSlug);
+      
+      router.push(successUrl.pathname + successUrl.search);
     } catch (error) {
       console.error('Error creating magazine:', error);
       alert(error instanceof Error ? error.message : 'Failed to create magazine. Please try again.');
