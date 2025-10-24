@@ -812,7 +812,8 @@ function NewIssueWizardContent() {
                 <div key={member.id} className="bg-card/50 backdrop-blur-sm p-4 rounded-lg">
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="font-mono">
-                      {member.role === "founder" ? "Founder" : `Editor ${index}`}
+                      {/* {member.role === "founder" ? "Founder" : `Editor ${index}`} */}
+                      Founder(You!)
                     </h3>
                     {team.length > 1 && member.role !== "founder" && (
                       <button

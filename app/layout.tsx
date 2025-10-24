@@ -3,6 +3,7 @@ import { Inter, Source_Code_Pro } from "next/font/google";
 import { minikitConfig } from "@/minikit.config";
 import { RootProvider } from "./rootProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { GlobalHeader } from "@/components/GlobalHeader";
 import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/components/ui/utils";
 import "./globals.css";
@@ -65,6 +66,7 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
+            <GlobalHeader />
             <main>
               {children}
             </main>
