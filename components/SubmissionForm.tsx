@@ -1,25 +1,33 @@
+"use client";
+
 import { useState } from "react";
 import { ArrowLeft, Image, Film, Music } from "lucide-react";
 import { AuthModal } from "./AuthModal";
+import { useAccount } from "wagmi";
+import { ConnectWallet } from "@coinbase/onchainkit/wallet";
 
 interface SubmissionFormProps {
   openCall: {
-    id: string;
+    id: string; // topic_id
     title: string;
-    magazine: string;
+    magazine: string | { id: string; name: string; slug: string };
     dueDate: string;
     bounty: string;
     category: string;
+    magazineId?: string;
+    issueId?: string;
+    bountyAmount?: number;
   };
   onBack: () => void;
   onSubmitted: () => void;
 }
 
 export function SubmissionForm({ openCall, onBack, onSubmitted }: SubmissionFormProps) {
+  const { address, isConnected } = useAccount();
   const [step, setStep] = useState<"intro" | "auth" | "form" | "preview" | "submitted">("intro");
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"usdc" | "usd">("usdc");
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -29,27 +37,88 @@ export function SubmissionForm({ openCall, onBack, onSubmitted }: SubmissionForm
     file: null as File | null,
   });
 
-  const handleAuth = (method: "usdc" | "usd") => {
-    setIsAuthenticated(true);
-    setPaymentMethod(method);
-    setShowAuthModal(false);
-    setStep("form");
-  };
-
   const handleStartSubmission = () => {
-    if (!isAuthenticated) {
+    if (!isConnected || !address) {
       setShowAuthModal(true);
     } else {
       setStep("form");
     }
   };
 
-  const handleSubmit = () => {
-    // This would submit to backend
-    setStep("submitted");
-    setTimeout(() => {
-      onSubmitted();
-    }, 2500);
+  const handleSubmit = async () => {
+    if (!isConnected || !address) {
+      setError("Please connect your wallet first");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      // First, ensure user exists
+      const userResponse = await fetch('/api/users/ensure', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ walletAddress: address }),
+      });
+      const userData = await userResponse.json();
+
+      if (!userData.success) {
+        throw new Error('Failed to create/fetch user');
+      }
+
+      const magazineName = typeof openCall.magazine === 'string' ? openCall.magazine : openCall.magazine.name;
+      const magazineId = openCall.magazineId || (typeof openCall.magazine === 'object' ? openCall.magazine.id : '');
+      
+      // Get topic and issue info from the open call
+      // We need to fetch this from the API since we only have the topic_id
+      const topicResponse = await fetch(`/api/topics/${openCall.id}`);
+      const topicData = await topicResponse.json();
+      
+      if (!topicData.success) {
+        throw new Error('Failed to fetch topic data');
+      }
+
+      console.log('Topic data:', topicData.topic);
+
+      // Submit the submission
+      const submissionPayload = {
+        topicId: openCall.id,
+        authorId: userData.user.id,
+        magazineId: topicData.topic.issues.magazine_id,
+        issueId: topicData.topic.issue_id,
+        title: formData.title,
+        content: formData.content,
+        description: formData.artistStatement || null,
+        mediaUrls: formData.file ? [URL.createObjectURL(formData.file)] : [],
+        bountyAmount: openCall.bountyAmount || parseInt(openCall.bounty.replace(/\$|,/g, '')) * 100,
+      };
+
+      console.log('Submitting:', submissionPayload);
+
+      const response = await fetch('/api/submissions/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(submissionPayload),
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to submit');
+      }
+
+      console.log('Submission created:', data.submission);
+      setStep("submitted");
+      setTimeout(() => {
+        onSubmitted();
+      }, 2500);
+    } catch (err) {
+      console.error('Submission error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to submit');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const isFormValid = () => {
@@ -67,6 +136,11 @@ export function SubmissionForm({ openCall, onBack, onSubmitted }: SubmissionForm
     
     if (["picture", "video", "audio"].includes(openCall.category)) {
       return formData.file !== null;
+    }
+    
+    // For "open" format, require either content or file
+    if (openCall.category === "open") {
+      return formData.content.trim().length > 0 || formData.file !== null;
     }
     
     return true;
@@ -145,7 +219,7 @@ export function SubmissionForm({ openCall, onBack, onSubmitted }: SubmissionForm
               Most decisions within 3–7 days.
             </p>
             <p className="text-sm">
-              If published, you&apos;ll receive {openCall.bounty} via {paymentMethod === "usdc" ? "USDC (0% fee)" : "bank transfer (10% fee)"}.
+              If published, you&apos;ll receive {openCall.bounty} via USDC (0% fee).
             </p>
           </div>
           <div className="text-xs text-muted-foreground">
@@ -240,17 +314,43 @@ export function SubmissionForm({ openCall, onBack, onSubmitted }: SubmissionForm
               Start Your Submission
             </button>
             <p className="text-xs text-muted-foreground text-center mt-4">
-              {!isAuthenticated && "You&apos;ll need to create an account or sign in"}
+              {!isConnected && "You&apos;ll need to connect your wallet"}
             </p>
           </div>
         </div>
 
         {showAuthModal && (
-          <AuthModal
-            onClose={() => setShowAuthModal(false)}
-            onAuthenticated={handleAuth}
-            context="submission"
-          />
+          <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+            <div className="bg-card p-8 rounded-lg max-w-md w-full text-center">
+              <h2 className="text-2xl font-bold mb-4">Connect Your Wallet</h2>
+              <p className="text-muted-foreground mb-6">
+                Connect your wallet to submit your work and receive payments
+              </p>
+              <div className="mb-4">
+                <ConnectWallet />
+              </div>
+              {isConnected && (
+                <div className="mt-4">
+                  <p className="text-sm text-green-600 mb-4">✅ Wallet Connected!</p>
+                  <button
+                    onClick={() => {
+                      setShowAuthModal(false);
+                      setStep("form");
+                    }}
+                    className="w-full px-4 py-2 bg-accent text-accent-foreground rounded-lg hover:bg-accent/90 transition-colors"
+                  >
+                    Continue to Submission
+                  </button>
+                </div>
+              )}
+              <button
+                onClick={() => setShowAuthModal(false)}
+                className="mt-4 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
         )}
       </div>
     );
@@ -514,6 +614,24 @@ export function SubmissionForm({ openCall, onBack, onSubmitted }: SubmissionForm
             </>
           )}
 
+          {openCall.category === "open" && (
+            <div className="space-y-3">
+              <label className="text-xs uppercase tracking-wider text-muted-foreground block">
+                Content
+              </label>
+              <textarea
+                value={formData.content}
+                onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                rows={12}
+                className="w-full border border-border px-4 py-3 bg-background focus:outline-none focus:border-accent transition-colors resize-none"
+                placeholder="Share your thoughts, experiences, or creative work..."
+              />
+              <div className="text-xs text-muted-foreground">
+                {formData.content.length} characters
+              </div>
+            </div>
+          )}
+
           {/* Submit */}
           <div className="pt-8 space-y-4">
             <div className="flex flex-col sm:flex-row gap-4">
@@ -530,15 +648,15 @@ export function SubmissionForm({ openCall, onBack, onSubmitted }: SubmissionForm
               
               <button
                 type="submit"
-                disabled={!isFormValid()}
+                disabled={!isFormValid() || isSubmitting}
                 className="flex-1 border border-border px-6 py-4 bg-primary text-primary-foreground hover:bg-accent hover:border-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-primary disabled:hover:border-border"
               >
-                Submit to {openCall.magazine}
+                {isSubmitting ? 'Submitting...' : `Submit to ${typeof openCall.magazine === 'string' ? openCall.magazine : openCall.magazine.name}`}
               </button>
             </div>
             
             <div className="text-xs text-muted-foreground text-center space-y-1">
-              <p>Payment via {paymentMethod === "usdc" ? "USDC (0% fee)" : "USD (10% fee)"} if published</p>
+              <p>Payment via USDC (0% fee) if published</p>
               <p>You&apos;ll receive an email notification about the editorial decision</p>
             </div>
           </div>

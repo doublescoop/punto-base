@@ -21,8 +21,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/client';
 
-
-export const runtime = 'edge';
+// Removed 'edge' runtime - causes issues with Supabase
 
 interface ReviewSubmissionRequest {
   action: 'accept' | 'reject';
@@ -76,7 +75,7 @@ export async function POST(
       );
     }
 
-    if (submission.status !== 'pending') {
+    if (submission.status !== 'SUBMITTED') {
       return NextResponse.json(
         {
           success: false,
@@ -88,10 +87,9 @@ export async function POST(
 
     // Update submission
     const updateData = {
-      status: body.action === 'accept' ? 'accepted' : 'rejected',
-      reviewed_at: new Date().toISOString(),
-      reviewed_by: body.reviewerId,
-      review_notes: body.reviewNotes || null,
+      status: body.action === 'accept' ? 'ACCEPTED' : 'REJECTED',
+      accepted_at: body.action === 'accept' ? new Date().toISOString() : null,
+      updated_at: new Date().toISOString(),
     };
 
     const { data: updatedSubmission, error: updateError } = await supabaseAdmin
@@ -119,8 +117,8 @@ export async function POST(
         recipient_id: submission.author_id,
         amount: submission.bounty_amount,
         currency: 'USDC' as const,
-        status: 'pending' as const,
-        role: 'contributor' as const,
+        status: 'PENDING' as const,
+        role: 'CONTRIBUTOR' as const,
         issue_id: submission.issue_id,
         magazine_id: submission.magazine_id,
       };

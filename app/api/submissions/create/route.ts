@@ -44,11 +44,22 @@ export async function POST(request: NextRequest) {
     const body: CreateSubmissionRequest = await request.json();
 
     // Validate required fields
-    if (!body.topicId || !body.authorId || !body.magazineId || !body.content) {
+    if (!body.topicId || !body.authorId || !body.magazineId) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Missing required fields: topicId, authorId, magazineId, content',
+          error: 'Missing required fields: topicId, authorId, magazineId',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Content is required for text submissions, but optional for media submissions
+    if (!body.content && (!body.mediaUrls || body.mediaUrls.length === 0)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Either content or mediaUrls must be provided',
         },
         { status: 400 }
       );
@@ -73,7 +84,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (topic.status !== 'open') {
+    if (topic.status !== 'UNFILLED') {
       return NextResponse.json(
         {
           success: false,
@@ -128,11 +139,11 @@ export async function POST(request: NextRequest) {
       description: body.description || null,
       content: body.content,
       media_urls: body.mediaUrls || [],
-      status: 'pending',
+      status: 'SUBMITTED',
       issue_id: topic.issue_id,
       magazine_id: body.magazineId,
       bounty_amount: body.bountyAmount || 0,
-      payment_status: 'pending',
+      payment_status: 'NOT_APPLICABLE',
     };
 
     const { data: submission, error: submissionError } = await supabaseAdmin

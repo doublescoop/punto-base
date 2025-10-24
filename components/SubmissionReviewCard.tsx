@@ -135,11 +135,12 @@ export function SubmissionReviewCard({
             <button
               onClick={() => handleVote("ACCEPTED")}
               disabled={isProcessing}
-              className="w-14 h-14 rounded-full border-2 border-border hover:border-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-              aria-label="Accept"
-              title="Accept submission"
+              className="px-6 py-3 rounded-full border-2 border-green-500 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-green-700 dark:text-green-300"
+              aria-label="Accept & Pay"
+              title="Accept submission and initiate payment"
             >
               <ThumbsUp className="w-5 h-5" />
+              <span>Accept & Pay</span>
             </button>
           </div>
 

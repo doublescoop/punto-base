@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, Suspense } from "react";
+import { useState, useEffect, useMemo, Suspense, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, ArrowRight, Plus, X, Users, Check } from "lucide-react";
 import { SocialLayerEvent } from "@/types/event";
@@ -188,16 +188,16 @@ function NewIssueWizardContent() {
     { id: "1", role: "founder", wallet: "", email: "" }
   ]);
 
-  // Auto-populate founder's wallet address when connected
+  // Auto-populate founder's wallet address when connected (only once)
   useEffect(() => {
-    if (address && team[0].wallet === "") {
+    if (address && team.length > 0 && team[0].wallet === "") {
       setTeam(prevTeam => 
         prevTeam.map((member, index) => 
           index === 0 ? { ...member, wallet: address } : member
         )
       );
     }
-  }, [address, team]);
+  }, [address]); // Only depend on address to prevent re-runs
   const [selectedTheme, setSelectedTheme] = useState(mockThemes[0].id);
   const [selectedColors, setSelectedColors] = useState<string[]>(["blue", "purple"]);
   const [magazineTreasury, setMagazineTreasury] = useState<{ address: string; founderAddress: string; magazineName: string; requiredFunding: number; currentBalance: number; createdAt: Date } | null>(null);
@@ -207,12 +207,14 @@ function NewIssueWizardContent() {
   const [isCreatingMagazine, setIsCreatingMagazine] = useState(false);
 
   // Calculate total bounty amount for open call topics only (bounty × slots per topic)
-  const totalTopicBounties = topics.reduce((sum, topic) => 
-    topic.isOpenCall ? sum + (topic.bountyAmount || 0) * topic.slotsNeeded : sum, 0
+  const totalTopicBounties = useMemo(() => 
+    topics.reduce((sum, topic) => 
+      topic.isOpenCall ? sum + (topic.bountyAmount || 0) * topic.slotsNeeded : sum, 0
+    ), [topics]
   );
 
-  // Generate magazine treasury when user connects wallet
-  useEffect(() => {
+  // Generate magazine treasury when user connects wallet (stable dependencies)
+  const createTreasuryOnce = useCallback(() => {
     if (address && scrapedEventData && !magazineTreasury) {
       const treasury = createMagazineTreasury(
         address,
@@ -223,6 +225,10 @@ function NewIssueWizardContent() {
       setMagazineTreasury(treasury);
     }
   }, [address, scrapedEventData, totalTopicBounties, magazineTreasury]);
+
+  useEffect(() => {
+    createTreasuryOnce();
+  }, [createTreasuryOnce]);
 
   // Read event data from URL parameters (only once)
   const initialEventData = useMemo(() => {
@@ -245,7 +251,7 @@ function NewIssueWizardContent() {
       setScrapedEventData(initialEventData);
       setEventUrl(initialEventData.url || "");
     }
-  }, [initialEventData, scrapedEventData]);
+  }, [initialEventData]); // Remove scrapedEventData dependency to prevent resets
 
   const steps = [
     { id: "event", title: "Event", icon: "📅" },
@@ -441,7 +447,7 @@ function NewIssueWizardContent() {
     }
   };
 
-  const addTopic = () => {
+  const addTopic = useCallback(() => {
     const { template, usedIndex, resetUsed } = getRandomTopicTemplate(usedTemplateIndices);
     
     const newTopic: Topic = {
@@ -456,74 +462,68 @@ function NewIssueWizardContent() {
       isTemplate: true
     };
     
-    setTopics([...topics, newTopic]);
+    setTopics(prev => [...prev, newTopic]);
     
     if (resetUsed) {
       setUsedTemplateIndices(new Set([usedIndex]));
     } else {
-      setUsedTemplateIndices(new Set([...usedTemplateIndices, usedIndex]));
+      setUsedTemplateIndices(prev => new Set([...prev, usedIndex]));
     }
-  };
+  }, [usedTemplateIndices]);
 
-  const removeTopic = (id: string) => {
-    if (topics.length > 1) {
-      setTopics(topics.filter(topic => topic.id !== id));
-    }
-  };
+  const removeTopic = useCallback((id: string) => {
+    setTopics(prev => prev.length > 1 ? prev.filter(topic => topic.id !== id) : prev);
+  }, []);
 
-  const updateTopic = (id: string, field: keyof Topic, value: string | number | boolean) => {
-    setTopics(topics.map(topic => 
+  const updateTopic = useCallback((id: string, field: keyof Topic, value: string | number | boolean) => {
+    setTopics(prev => prev.map(topic => 
       topic.id === id ? { ...topic, [field]: value } : topic
     ));
-  };
+  }, []);
 
-  const addTeamMember = () => {
+  const addTeamMember = useCallback(() => {
     const newMember: TeamMember = {
       id: Date.now().toString(),
       role: "editor",
       wallet: "",
       email: ""
     };
-    setTeam([...team, newMember]);
-  };
+    setTeam(prev => [...prev, newMember]);
+  }, []);
 
-  const removeTeamMember = (id: string) => {
-    if (team.length > 1) {
-      setTeam(team.filter(member => member.id !== id));
-    }
-  };
+  const removeTeamMember = useCallback((id: string) => {
+    setTeam(prev => prev.length > 1 ? prev.filter(member => member.id !== id) : prev);
+  }, []);
 
-  const updateTeamMember = (id: string, field: keyof TeamMember, value: string) => {
-    setTeam(team.map(member => 
+  const updateTeamMember = useCallback((id: string, field: keyof TeamMember, value: string) => {
+    setTeam(prev => prev.map(member => 
       member.id === id ? { ...member, [field]: value } : member
     ));
-  };
+  }, []);
 
-  const toggleColor = (colorId: string) => {
-    if (selectedColors.includes(colorId)) {
-      if (selectedColors.length > 1) {
-        setSelectedColors(selectedColors.filter(id => id !== colorId));
+  const toggleColor = useCallback((colorId: string) => {
+    setSelectedColors(prev => {
+      if (prev.includes(colorId)) {
+        return prev.length > 1 ? prev.filter(id => id !== colorId) : prev;
+      } else {
+        return prev.length < 2 ? [...prev, colorId] : prev;
       }
-    } else {
-      if (selectedColors.length < 2) {
-        setSelectedColors([...selectedColors, colorId]);
-      }
-    }
-  };
+    });
+  }, []);
 
-  const nextStep = () => {
+  const nextStep = useCallback(() => {
     const stepIndex = steps.findIndex(step => step.id === currentStep);
     if (stepIndex < steps.length - 1) {
       setCurrentStep(steps[stepIndex + 1].id as WizardStep);
     }
-  };
+  }, [currentStep]);
 
-  const prevStep = () => {
+  const prevStep = useCallback(() => {
     const stepIndex = steps.findIndex(step => step.id === currentStep);
     if (stepIndex > 0) {
       setCurrentStep(steps[stepIndex - 1].id as WizardStep);
     }
-  };
+  }, [currentStep]);
 
   const renderStepContent = () => {
     switch (currentStep) {
@@ -650,7 +650,7 @@ function NewIssueWizardContent() {
               {/* Action Options */}
               <div className="flex justify-between mt-8">
                 <button 
-                  onClick={() => setIsEditingEvent(!isEditingEvent)}
+                  onClick={() => setIsEditingEvent(prev => !prev)}
                   className="px-4 py-2 border-2 border-accent text-accent rounded-none font-mono text-sm uppercase tracking-wider hover:bg-accent hover:text-accent-foreground transition-colors"
                 >
                   {isEditingEvent ? 'Cancel' : 'Needs Editing'}

@@ -439,7 +439,7 @@ function OpenCallsPageContent() {
                   {...call}
                   onClick={() => {
                     setSelectedCall(call);
-                    setView("voting");
+                    setView("submission"); // Go directly to submission
                   }}
                 />
               ))}

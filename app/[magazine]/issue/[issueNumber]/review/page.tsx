@@ -76,8 +76,8 @@ export default function ReviewSubmissionsPage() {
     }
   }, [submissions, statusFilter]);
 
-  // Handler for accepting a submission
-  const handleAccept = async (submissionId: string) => {
+  // Handler for accepting a submission and initiating payment
+  const handleAcceptAndPay = async (submissionId: string) => {
     if (!address) {
       alert('Please connect your wallet');
       return;
@@ -89,13 +89,13 @@ export default function ReviewSubmissionsPage() {
       const userData = await userRes.json();
       if (!userData.success) throw new Error('Failed to fetch user');
 
-      // Update submission status
-      const res = await fetch(`/api/submissions/${submissionId}/status`, {
-        method: 'PATCH',
+      // Accept the submission (creates payment record)
+      const res = await fetch(`/api/submissions/${submissionId}/review`, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          status: 'ACCEPTED',
-          editorId: userData.user.id,
+          action: 'accept',
+          reviewerId: userData.user.id,
         }),
       });
 
@@ -107,7 +107,10 @@ export default function ReviewSubmissionsPage() {
             sub.id === submissionId ? { ...sub, status: 'ACCEPTED' } : sub
           )
         );
-        alert('✅ Submission accepted!');
+        
+        // Redirect to Pay Winners page
+        alert('✅ Submission accepted! Redirecting to payment page...');
+        router.push(`/${params.magazine}/issue/${params.issueNumber}/pay`);
       } else {
         throw new Error(data.error);
       }
@@ -263,9 +266,11 @@ export default function ReviewSubmissionsPage() {
               <SubmissionReviewCard
                 key={submission.id}
                 submission={submission}
-                onAccept={() => handleAccept(submission.id)}
+                onAccept={() => handleAcceptAndPay(submission.id)}
                 onReject={() => handleReject(submission.id)}
                 onHmm={() => handleHmm(submission.id)}
+                showVoteButtons={true}
+                isReviewing={true}
               />
             ))}
           </div>
