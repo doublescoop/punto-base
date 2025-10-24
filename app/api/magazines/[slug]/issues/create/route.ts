@@ -1,5 +1,5 @@
 /**
- * POST /api/magazines/[magazineId]/issues/create
+ * POST /api/magazines/[slug]/issues/create
  * 
  * Creates a new issue for a magazine
  * 
@@ -49,10 +49,10 @@ interface CreateIssueRequest {
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ magazineId: string }> }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { magazineId } = await params;
+    const { slug } = await params;
     const body: CreateIssueRequest = await request.json();
 
     // Validate required fields
@@ -76,11 +76,11 @@ export async function POST(
       );
     }
 
-    // Verify magazine exists
+    // Get magazine by slug
     const { data: magazine, error: magazineError } = await supabaseAdmin
       .from('magazines')
       .select('id, status')
-      .eq('id', magazineId)
+      .eq('slug', slug)
       .single();
 
     if (magazineError || !magazine) {
@@ -97,7 +97,7 @@ export async function POST(
     const { data: existingIssues } = await supabaseAdmin
       .from('issues')
       .select('issue_number')
-      .eq('magazine_id', magazineId)
+      .eq('magazine_id', magazine.id)
       .order('issue_number', { ascending: false })
       .limit(1);
 
@@ -107,7 +107,7 @@ export async function POST(
 
     // Create issue
     const issueData: Database['public']['Tables']['issues']['Insert'] = {
-      magazine_id: magazineId,
+      magazine_id: magazine.id,
       issue_number: nextIssueNumber,
       title: body.title,
       description: body.description,

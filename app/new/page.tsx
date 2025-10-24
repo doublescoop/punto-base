@@ -308,13 +308,19 @@ function NewIssueWizardContent() {
 
       // Step 3: Create issue
       const issuePayload = {
-        issueNumber: 1,
         title: `Issue #1: ${scrapedEventData.title}`,
         description: `Post-event zine from ${scrapedEventData.title}`,
-        publishAt: new Date(publishDate).toISOString(),
+        submissionDeadline: new Date(publishDate).toISOString(),
+        publicationDate: new Date(publishDate).toISOString(),
+        topics: topics.filter(t => t.isOpenCall).map(t => ({
+          title: t.title,
+          description: `Submit your ${t.format} content for this topic`,
+          bountyAmount: (t.bountyAmount || 1) * 100, // Convert to cents
+          maxSubmissions: t.slotsNeeded,
+        })),
       };
 
-      const issueResponse = await fetch(`/api/magazines/${magazineId}/issues/create`, {
+      const issueResponse = await fetch(`/api/magazines/${magazineSlug}/issues/create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(issuePayload),
@@ -470,7 +476,7 @@ function NewIssueWizardContent() {
                         {scrapedEventData?.date || 'Event Date'} • {scrapedEventData?.time || 'Event Time'}
                       </p>
                     )}
-                  </div>
+            </div>
                 </div>
               </div>
 
@@ -481,7 +487,7 @@ function NewIssueWizardContent() {
                     <div className="text-2xl">👥</div>
                     <p className="font-mono text-sm text-muted-foreground">Participants</p>
                     {isEditingEvent ? (
-                      <input
+              <input
                         type="number"
                         value={scrapedEventData?.participantCount?.count || ''}
                         onChange={(e) => setScrapedEventData(prev => prev ? {
@@ -603,15 +609,15 @@ function NewIssueWizardContent() {
                           {topic.isOpenCall ? 'Open Call' : 'Internal'}
                         </span>
                       </div>
-                      {topics.length > 1 && (
-                        <button
-                          onClick={() => removeTopic(topic.id)}
-                          className="p-1 hover:bg-muted/50 rounded transition-colors"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
+                    {topics.length > 1 && (
+                      <button
+                        onClick={() => removeTopic(topic.id)}
+                        className="p-1 hover:bg-muted/50 rounded transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
                   </div>
 
                   <div className="space-y-4">
@@ -645,36 +651,36 @@ function NewIssueWizardContent() {
 
                     {topic.isOpenCall && (
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium mb-1">Slots Needed</label>
-                          <input
-                            type="number"
-                            min="1"
-                            value={topic.slotsNeeded}
-                            onChange={(e) => updateTopic(topic.id, "slotsNeeded", parseInt(e.target.value))}
-                            className="w-full px-3 py-2 bg-background/50 backdrop-blur-sm border border-border/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
-                          />
-                        </div>
-                        <div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Slots Needed</label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={topic.slotsNeeded}
+                        onChange={(e) => updateTopic(topic.id, "slotsNeeded", parseInt(e.target.value))}
+                        className="w-full px-3 py-2 bg-background/50 backdrop-blur-sm border border-border/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+                      />
+                    </div>
+            <div>
                           <label className="block text-sm font-medium mb-1">Bounty (USDC)</label>
-                          <input
+                      <input
                             type="number"
                             min="0"
                             placeholder="20"
                             value={topic.bountyAmount || ""}
                             onChange={(e) => updateTopic(topic.id, "bountyAmount", parseInt(e.target.value) || 0)}
-                            className="w-full px-3 py-2 bg-background/50 backdrop-blur-sm border border-border/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
-                          />
-                        </div>
-                        <div>
+                        className="w-full px-3 py-2 bg-background/50 backdrop-blur-sm border border-border/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+                      />
+                    </div>
+                    <div>
                           <label className="block text-sm font-medium mb-1">Due Date</label>
-                          <input
+                      <input
                             type="date"
                             value={topic.dueDate || getDefaultDueDate()}
                             onChange={(e) => updateTopic(topic.id, "dueDate", e.target.value)}
-                            className="w-full px-3 py-2 bg-background/50 backdrop-blur-sm border border-border/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
-                          />
-                        </div>
+                        className="w-full px-3 py-2 bg-background/50 backdrop-blur-sm border border-border/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+                      />
+                    </div>
                       </div>
                     )}
                   </div>
@@ -780,7 +786,7 @@ function NewIssueWizardContent() {
               {address && magazineTreasury && (
                 <div className="bg-card/50 backdrop-blur-sm p-6 rounded-lg border border-border/50">
                   <h3 className="font-mono text-lg mb-4">Magazine Identity & Treasury</h3>
-                  <div className="space-y-4">
+            <div className="space-y-4">
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">Founder (You):</span>
                       <code className="font-mono text-sm bg-muted/50 px-2 py-1 rounded">
@@ -882,7 +888,7 @@ function NewIssueWizardContent() {
       case "team":
         return (
           <div className="space-y-6">
-            <div>
+              <div>
               <h2 className="font-mono text-2xl mb-4">Team Setup</h2>
               <p className="text-muted-foreground mb-6">
                 Add team members who will help curate submissions. You need at least one Editor in addition to yourself as Founder.
@@ -907,14 +913,14 @@ function NewIssueWizardContent() {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <label className="block text-sm font-medium mb-1">Wallet Address</label>
-                      <input
-                        type="text"
-                        placeholder="0x..."
+                <input
+                  type="text"
+                  placeholder="0x..."
                         value={member.wallet}
                         onChange={(e) => updateTeamMember(member.id, "wallet", e.target.value)}
                         className="w-full px-3 py-2 bg-background/50 backdrop-blur-sm border border-border/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
                       />
-                    </div>
+              </div>
                     <div>
                     <label className="block text-sm font-medium mb-1">Nickname (Optional)</label>
                       <input
@@ -1048,13 +1054,13 @@ function NewIssueWizardContent() {
       <div className="border-b border-border/30">
         <div className="w-full px-6 lg:px-12 py-8">
           <div className="flex items-start justify-between mb-6">
-            <button
-              onClick={() => router.push("/profile")}
+          <button
+            onClick={() => router.push("/profile")}
               className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-2"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to Profile
-            </button>
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Profile
+          </button>
             
           </div>
 
@@ -1139,8 +1145,8 @@ function NewIssueWizardContent() {
                   </>
                 ) : (
                   <>
-                    <Check className="w-4 h-4" />
-                    Create Magazine Issue
+                <Check className="w-4 h-4" />
+                Create Magazine Issue
                   </>
                 )}
               </button>
