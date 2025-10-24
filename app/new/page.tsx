@@ -266,22 +266,32 @@ function NewIssueWizardContent() {
     setIsCreatingMagazine(true);
 
     try {
-      // Step 1: Get user ID from wallet address
-      const userResponse = await fetch(`/api/users/me?address=${address}`);
+      // Step 1: Ensure user exists (create if needed)
+      const userResponse = await fetch('/api/users/ensure', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ walletAddress: address }),
+      });
       const userData = await userResponse.json();
 
       if (!userData.success || !userData.user) {
-        throw new Error('Failed to fetch user data. Please connect your wallet.');
+        throw new Error('Failed to create/fetch user data. Please connect your wallet.');
       }
 
       const userId = userData.user.id;
 
       // Step 2: Create magazine
       const magazineName = `${scrapedEventData.title} Zine`;
-      const magazineSlug = scrapedEventData.title
+      const baseSlug = scrapedEventData.title
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-+|-+$/g, '');
+      
+      // Add timestamp to make slug unique - generate ONCE
+      const timestamp = Date.now().toString().slice(-6); // Last 6 digits
+      const magazineSlug = `${baseSlug}-${timestamp}`;
+      
+      console.log('Generated slug ONCE:', { baseSlug, timestamp, finalSlug: magazineSlug });
 
       const magazinePayload = {
         name: magazineName,
@@ -290,6 +300,11 @@ function NewIssueWizardContent() {
         founderId: userId,
         coverImageUrl: scrapedEventData.content?.media?.[0] || null,
         defaultBountyAmount: 100, // $1.00 in cents
+        // Add missing required fields from frontend
+        accentColors: selectedColors, // From theme step
+        themeId: selectedTheme, // From theme step  
+        treasuryAddress: magazineTreasury?.address || '', // From treasury step
+        founderNickname: team[0]?.nickname || null, // From team step
       };
 
       const magazineResponse = await fetch('/api/magazines/create', {
@@ -304,7 +319,12 @@ function NewIssueWizardContent() {
         throw new Error(magazineData.error || 'Failed to create magazine');
       }
 
-      const magazineId = magazineData.magazine.id;
+      const magazine = magazineData.magazine;
+      const magazineId = magazine.id;
+      const actualSlug = magazine.slug; // Use the actual slug from the database
+      
+      console.log('Created magazine:', { id: magazineId, slug: actualSlug, name: magazine.name });
+      console.log('Using slug for issue creation:', actualSlug);
 
       // Step 3: Create issue
       const issuePayload = {
@@ -312,27 +332,73 @@ function NewIssueWizardContent() {
         description: `Post-event zine from ${scrapedEventData.title}`,
         submissionDeadline: new Date(publishDate).toISOString(),
         publicationDate: new Date(publishDate).toISOString(),
+        // Add missing required fields from frontend
+        requiredFunding: totalTopicBounties * 100, // Convert USDC to cents
+        treasuryAddress: magazineTreasury?.address || '',
+        sourceEventDate: scrapedEventData.date,
+        sourceEventTitle: scrapedEventData.title,
+        sourceEventLocation: scrapedEventData.location?.name,
+        sourceEventUrl: eventUrl,
+        sourceEventPlatform: eventUrl.includes('luma') ? 'luma' : 'sociallayer',
+        // Fix topics mapping with proper field names and values
         topics: topics.filter(t => t.isOpenCall).map(t => ({
           title: t.title,
           description: `Submit your ${t.format} content for this topic`,
-          bountyAmount: (t.bountyAmount || 1) * 100, // Convert to cents
+          bountyAmount: (t.bountyAmount || 1) * 100, // Convert USDC to cents
           maxSubmissions: t.slotsNeeded,
+          format: t.format, // Pass actual format from frontend
+          isOpenCall: t.isOpenCall, // Pass actual value from frontend
+          dueDate: t.dueDate, // Add due date from frontend
         })),
       };
 
-      const issueResponse = await fetch(`/api/magazines/${magazineSlug}/issues/create`, {
+      console.log('Creating issue for magazine slug:', actualSlug);
+      console.log('Issue payload:', issuePayload);
+      console.log('Full URL being called:', `/api/magazines/${actualSlug}/issues/create`);
+      
+      const issueResponse = await fetch(`/api/magazines/${actualSlug}/issues/create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(issuePayload),
       });
 
       const issueData = await issueResponse.json();
+      console.log('Issue creation response:', issueData);
 
       if (!issueData.success || !issueData.issue) {
         throw new Error(issueData.error || 'Failed to create issue');
       }
 
-      // Step 4: Redirect to founder dashboard
+      // Step 4: Create magazine editors (exclude founder, only editors)
+      const editors = team.slice(1).filter(member => member.wallet && member.wallet.trim() !== '');
+      if (editors.length > 0) {
+        console.log('Creating magazine editors:', editors);
+        
+        const editorsPayload = {
+          editors: editors.map(editor => ({
+            walletAddress: editor.wallet,
+            nickname: editor.nickname || null,
+          })),
+        };
+
+        const editorsResponse = await fetch(`/api/magazines/${actualSlug}/editors`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(editorsPayload),
+        });
+
+        const editorsData = await editorsResponse.json();
+        console.log('Editors creation response:', editorsData);
+
+        if (!editorsData.success) {
+          console.error('Failed to create editors, but magazine/issue were created:', editorsData.error);
+          // Don't throw error here - magazine was created successfully, editor creation is secondary
+        } else {
+          console.log(`✅ Created ${editorsData.editorsCreated} magazine editors`);
+        }
+      }
+
+      // Step 5: Redirect to founder dashboard
       alert('✅ Magazine created successfully!');
       router.push('/profile?tab=founder');
     } catch (error) {
@@ -761,7 +827,7 @@ function NewIssueWizardContent() {
               <p className="text-muted-foreground mb-6">
                 {address 
                   ? `Fund your magazine treasury to pay contributors. You need $${totalTopicBounties} USDC total for all topic bounties.`
-                  : `Connect your wallet (top-right) to create a magazine treasury and fund it to pay contributors. You need $${totalTopicBounties} USDC total for all topic bounties.`
+                  : ``
                 }
               </p>
             </div>

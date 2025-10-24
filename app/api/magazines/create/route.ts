@@ -38,6 +38,11 @@ interface CreateMagazineRequest {
   defaultBountyAmount?: number;
   coverImageUrl?: string;
   logoUrl?: string;
+  // Add missing fields from frontend
+  accentColors?: string[];
+  themeId?: string;  
+  treasuryAddress?: string;
+  founderNickname?: string;
 }
 
 export async function POST(request: NextRequest) {
@@ -91,9 +96,11 @@ export async function POST(request: NextRequest) {
       founder_id: body.founderId,
       cover_image: body.coverImageUrl || null,
       logo_image: body.logoUrl || null,
-      theme_id: 'default',
-      accent_colors: ['#000000', '#ffffff'],
-      treasury_address: '', // Will be set when Safe is created
+      // Use frontend values instead of hardcoded defaults
+      theme_id: body.themeId || 'clean-gallery', // Default to clean-gallery theme
+      accent_colors: body.accentColors || ['#3b82f6', '#8b5cf6'], // Default to blue/purple
+      treasury_address: body.treasuryAddress || '', // Use treasury from frontend
+      founder_nickname: body.founderNickname || null,
       default_bounty_amount: body.defaultBountyAmount || 1000, // $10 default
     };
 

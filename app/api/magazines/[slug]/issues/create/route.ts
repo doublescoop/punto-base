@@ -31,7 +31,8 @@ import { supabaseAdmin } from '@/lib/supabase/client';
 import type { Database } from '@/database.types';
 import type { MagazineIssue } from '@/types/schema';
 
-export const runtime = 'edge';
+// Removed 'edge' runtime - causes issues with Supabase
+// export const runtime = 'edge';
 
 interface CreateIssueRequest {
   title: string;
@@ -39,11 +40,23 @@ interface CreateIssueRequest {
   coverImageUrl?: string;
   submissionDeadline: string;
   publicationDate: string;
+  // Add missing fields from frontend
+  requiredFunding?: number;
+  treasuryAddress?: string;
+  sourceEventDate?: string;
+  sourceEventTitle?: string;
+  sourceEventLocation?: string;
+  sourceEventUrl?: string;
+  sourceEventPlatform?: string;
   topics: Array<{
     title: string;
     description: string;
     bountyAmount: number;
     maxSubmissions?: number;
+    // Add missing topic fields
+    format?: string;
+    isOpenCall?: boolean; 
+    dueDate?: string;
   }>;
 }
 
@@ -113,9 +126,16 @@ export async function POST(
       description: body.description,
       status: 'DRAFT',
       deadline: body.submissionDeadline,
-      treasury_address: '0x0000000000000000000000000000000000000000', // Placeholder - will be updated when treasury is created
-      required_funding: 0, // Will be calculated later
+      // Use frontend values instead of hardcoded defaults
+      treasury_address: body.treasuryAddress || '0x0000000000000000000000000000000000000000',
+      required_funding: body.requiredFunding || 0,
       current_balance: 0,
+      // Add source event data from frontend
+      source_event_date: body.sourceEventDate || null,
+      source_event_title: body.sourceEventTitle || null,
+      source_event_location: body.sourceEventLocation || null,
+      source_event_url: body.sourceEventUrl || null,
+      source_event_platform: body.sourceEventPlatform || null,
     };
 
     const { data: issue, error: issueError } = await supabaseAdmin
@@ -144,8 +164,10 @@ export async function POST(
       slots_needed: topic.maxSubmissions || 1,
       position: index,
       status: 'open',
-      format: 'mixed', // Default format
-      is_open_call: true, // All topics are open calls in this API
+      // Use frontend values instead of hardcoded defaults
+      format: topic.format || 'open', // Use actual format from frontend
+      is_open_call: topic.isOpenCall !== false, // Use actual value, default true
+      due_date: topic.dueDate || null, // Add due date from frontend
     }));
 
     const { data: topics, error: topicsError } = await supabaseAdmin
