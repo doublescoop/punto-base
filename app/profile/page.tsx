@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Lock, Copy, FileText, BookOpen, Users, Briefcase, ArrowRight, Plus, TrendingUp, Clock, DollarSign, Settings } from "lucide-react";
 import { toast } from "sonner";
 import { useAccount } from "wagmi";
@@ -138,13 +138,28 @@ const mockUserData = {
 
 export default function ProfilePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { address } = useAccount();
   const [activeTab, setActiveTab] = useState<"contributions" | "founder" | "editor" | "library">("contributions");
   const [selectedSubmission, setSelectedSubmission] = useState<typeof mockUserData.submissions[0] | null>(null);
   const [magazines, setMagazines] = useState<MagazineWithStats[]>([]);
   const [isLoadingMagazines, setIsLoadingMagazines] = useState(false);
+  const [userRoles, setUserRoles] = useState({
+    hasSubmissions: false,
+    isFounder: false,
+    isEditor: false,
+    isReader: true,
+  });
 
-  // Fetch founder's magazines
+  // Handle URL tab parameter
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab && ['contributions', 'founder', 'editor', 'library'].includes(tab)) {
+      setActiveTab(tab as any);
+    }
+  }, [searchParams]);
+
+  // Fetch founder's magazines and determine roles
   useEffect(() => {
     if (address && activeTab === "founder") {
       setIsLoadingMagazines(true);
@@ -153,6 +168,11 @@ export default function ProfilePage() {
         .then((data) => {
           if (data.success) {
             setMagazines(data.magazines);
+            // Update user roles based on fetched data
+            setUserRoles(prev => ({
+              ...prev,
+              isFounder: data.magazines.length > 0
+            }));
           }
         })
         .catch((error) => console.error("Failed to fetch magazines:", error))
@@ -160,26 +180,43 @@ export default function ProfilePage() {
     }
   }, [address, activeTab]);
 
+  // Check if user is founder on mount (for tab availability)
+  useEffect(() => {
+    if (address) {
+      fetch(`/api/users/${address}/magazines`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            setUserRoles(prev => ({
+              ...prev,
+              isFounder: data.magazines.length > 0
+            }));
+          }
+        })
+        .catch((error) => console.error("Failed to check founder status:", error));
+    }
+  }, [address]);
+
   const tabs = [
     {
       id: "contributions" as const,
       label: "Contributions",
       icon: FileText,
-      locked: !mockUserData.roles.hasSubmissions,
+      locked: !userRoles.hasSubmissions,
       lockMessage: "Submit to an Open Call to see your contributions.",
     },
     {
       id: "founder" as const,
       label: "Founder",
       icon: Briefcase,
-      locked: !mockUserData.roles.isFounder,
+      locked: !userRoles.isFounder,
       lockMessage: "Start a new Magazine to unlock founder tools.",
     },
     {
       id: "editor" as const,
       label: "Editor",
       icon: Users,
-      locked: !mockUserData.roles.isEditor,
+      locked: !userRoles.isEditor,
       lockMessage: "You'll unlock this when a Founder adds you as an Editor.",
     },
     {
@@ -195,6 +232,35 @@ export default function ProfilePage() {
     navigator.clipboard.writeText(text);
     toast.success("Copied to clipboard");
   };
+
+  // Get display info from wallet
+  const displayAddress = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : "Not connected";
+  const displayName = address ? `User ${address.slice(0, 6)}` : "Connect Wallet";
+
+  // Show wallet connection prompt if no address
+  if (!address) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-6 max-w-md">
+          <LiquidGlass size={120} tint="rgba(113, 113, 130, 0.15)" className="mx-auto">
+            <Lock className="w-10 h-10 opacity-50" />
+          </LiquidGlass>
+          <div className="space-y-2">
+            <h3 className="font-mono text-xl">Connect Wallet</h3>
+            <p className="text-muted-foreground">
+              Please connect your wallet to view your profile and magazines.
+            </p>
+          </div>
+          <button
+            onClick={() => router.push("/")}
+            className="px-6 py-3 bg-accent text-accent-foreground hover:bg-accent/90 transition-colors rounded-full"
+          >
+            Go Home
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -223,28 +289,33 @@ I'll continue from where I left off, completing the profile page implementation:
           {/* Profile Header */}
           <div className="flex items-start gap-6 mb-8">
             <LiquidGlass size={80} tint="rgba(236, 236, 240, 0.3)">
-              <span className="text-2xl">{mockUserData.displayName[0]}</span>
+              <span className="text-2xl">{displayName[0]}</span>
             </LiquidGlass>
             
             <div className="flex-1 space-y-3">
-              <h1 className="font-mono text-3xl tracking-tight">{mockUserData.displayName}</h1>
+              <h1 className="font-mono text-3xl tracking-tight">{displayName}</h1>
               
               <div className="flex flex-wrap gap-4 text-sm">
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground">Wallet:</span>
-                  <code className="bg-muted px-2 py-1">{mockUserData.wallet}</code>
-                  <button
-                    onClick={() => handleCopy(mockUserData.wallet)}
-                    className="hover:text-accent transition-colors"
-                  >
-                    <Copy className="w-3 h-3" />
-                  </button>
+                  <code className="bg-muted px-2 py-1">{displayAddress}</code>
+                  {address && (
+                    <button
+                      onClick={() => handleCopy(address)}
+                      className="hover:text-accent transition-colors"
+                      title="Copy full address"
+                    >
+                      <Copy className="w-3 h-3" />
+                    </button>
+                  )}
                 </div>
                 
-                <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground">Email:</span>
-                  <span>{mockUserData.email}</span>
-                </div>
+                {userRoles.isFounder && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground">Role:</span>
+                    <span className="px-2 py-1 bg-accent/10 text-accent text-xs rounded-full">Founder</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -259,7 +330,7 @@ I'll continue from where I left off, completing the profile page implementation:
                   </LiquidGlass>
                   <div>
                     <p className="text-sm text-muted-foreground">Total Submissions</p>
-                    <p className="text-xl font-mono">{mockUserData.quickStats.totalSubmissions}</p>
+                    <p className="text-xl font-mono">0</p>
                   </div>
                 </div>
               </div>
@@ -270,8 +341,12 @@ I'll continue from where I left off, completing the profile page implementation:
                     <Clock className="w-5 h-5 text-orange-600" />
                   </LiquidGlass>
                   <div>
-                    <p className="text-sm text-muted-foreground">Pending Deadlines</p>
-                    <p className="text-xl font-mono">{mockUserData.quickStats.pendingDeadlines}</p>
+                    <p className="text-sm text-muted-foreground">Open Issues</p>
+                    <p className="text-xl font-mono">
+                      {magazines.reduce((count, mag) => 
+                        count + mag.issues.filter(issue => issue.status === "OPEN").length, 0
+                      )}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -282,8 +357,13 @@ I'll continue from where I left off, completing the profile page implementation:
                     <DollarSign className="w-5 h-5 text-blue-600" />
                   </LiquidGlass>
                   <div>
-                    <p className="text-sm text-muted-foreground">Total Treasury</p>
-                    <p className="text-xl font-mono">{mockUserData.quickStats.totalTreasury}</p>
+                    <p className="text-sm text-muted-foreground">Pending Payouts</p>
+                    <p className="text-xl font-mono">
+                      ${(magazines.reduce((total, mag) => 
+                        total + mag.issues.reduce((issueTotal, issue) => 
+                          issueTotal + issue.pending_payment_amount, 0
+                        ), 0) / 100).toFixed(0)}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -294,8 +374,8 @@ I'll continue from where I left off, completing the profile page implementation:
                     <TrendingUp className="w-5 h-5 text-purple-600" />
                   </LiquidGlass>
                   <div>
-                    <p className="text-sm text-muted-foreground">Active Magazines</p>
-                    <p className="text-xl font-mono">{mockUserData.quickStats.activeMagazines}</p>
+                    <p className="text-sm text-muted-foreground">Your Magazines</p>
+                    <p className="text-xl font-mono">{magazines.length}</p>
                   </div>
                 </div>
               </div>

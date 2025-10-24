@@ -19,10 +19,11 @@ interface MagazineWithStats extends Magazine {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { address: string } }
+  { params }: { params: Promise<{ address: string }> }
 ) {
   try {
-    const walletAddress = params.address;
+    const { address } = await params;
+    const walletAddress = address;
 
     if (!walletAddress) {
       return NextResponse.json(

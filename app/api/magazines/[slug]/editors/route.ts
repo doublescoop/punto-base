@@ -34,10 +34,10 @@ interface CreateEditorsRequest {
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { slug } = params;
+    const { slug } = await params;
     const body: CreateEditorsRequest = await request.json();
 
     // Validate required fields
