@@ -59,7 +59,7 @@ export default function Home() {
           }} />
         </div>
         
-        <div className="max-w-7xl mx-auto px-6 py-24 relative z-10">
+        <div className="w-full px-6 lg:px-12 py-24 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             {/* Left Content */}
             <div className="space-y-8">
@@ -151,7 +151,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="border-t border-border/20 bg-background/50 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-6 py-16">
+        <div className="w-full px-6 lg:px-12 py-16">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="space-y-4">
               <h4 className="font-display text-lg text-foreground">PUNTO</h4>

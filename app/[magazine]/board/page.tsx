@@ -156,7 +156,7 @@ export default function BoardPage() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="border-b border-border/30">
-        <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="w-full px-6 lg:px-12 py-8">
           <button
             onClick={() => router.push("/profile")}
             className="text-sm text-muted-foreground hover:text-foreground transition-colors mb-6 inline-flex items-center gap-2"
@@ -197,7 +197,7 @@ export default function BoardPage() {
 
       {/* Issue Status */}
       <div className="border-b border-border/20 bg-card/30 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-6 py-6">
+        <div className="w-full px-6 lg:px-12 py-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="flex items-center gap-3">
               <LiquidGlass size={40} tint="rgba(245, 158, 11, 0.15)">
@@ -245,7 +245,7 @@ export default function BoardPage() {
       </div>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 py-12">
+      <main className="w-full px-6 lg:px-12 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Topics Board */}
           <div className="lg:col-span-3">
@@ -373,7 +373,7 @@ export default function BoardPage() {
 
       {/* Publish Button */}
       <div className="border-t border-border/20 bg-card/30 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-6 py-6">
+        <div className="w-full px-6 lg:px-12 py-6">
           <div className="flex items-center justify-between">
             <div className="text-sm text-muted-foreground">
               {canPublish ? (

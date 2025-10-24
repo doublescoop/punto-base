@@ -2,8 +2,8 @@ import { EventScraper } from '@/components/EventScraper';
 
 export default function ScraperDemoPage() {
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="max-w-4xl mx-auto">
+    <div className="w-full py-8 px-6 lg:px-12">
+      <div className="w-full">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-4">SocialLayer Event Scraper Demo</h1>
           <p className="text-muted-foreground text-lg">

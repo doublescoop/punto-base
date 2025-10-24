@@ -163,7 +163,7 @@ export default function ProfilePage() {
 
       {/* Header */}
       <div className="border-b border-border/30">
-        <div className="max-w-6xl mx-auto px-6 py-8">
+        <div className="w-full px-6 lg:px-12 py-8">
           <button
             onClick={() => router.push("/opencalls")}
             className="text-sm text-muted-# 2025/punto/punto-base/app/profile/page.tsx
@@ -286,7 +286,7 @@ I'll continue from where I left off, completing the profile page implementation:
       </div>
 
       {/* Tab Content */}
-      <div className="max-w-6xl mx-auto px-6 py-12">
+      <div className="w-full px-6 lg:px-12 py-12">
         {/* Contributions Tab */}
         {activeTab === "contributions" && !tabs[0].locked && (
           <div className="space-y-12">

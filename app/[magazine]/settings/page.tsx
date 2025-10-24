@@ -145,7 +145,7 @@ export default function SettingsPage() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="border-b border-border/30">
-        <div className="max-w-6xl mx-auto px-6 py-8">
+        <div className="w-full px-6 lg:px-12 py-8">
           <button
             onClick={() => router.push(`/${magazineName}/board`)}
             className="text-sm text-muted-foreground hover:text-foreground transition-colors mb-6 inline-flex items-center gap-2"
@@ -167,7 +167,7 @@ export default function SettingsPage() {
 
       {/* Tabs */}
       <div className="border-b border-border/20 bg-card/30 backdrop-blur-sm">
-        <div className="max-w-6xl mx-auto px-6">
+        <div className="w-full px-6 lg:px-12">
           <div className="flex gap-1 -mb-px overflow-x-auto">
             {tabs.map((tab) => {
               const Icon = tab.icon;
@@ -191,7 +191,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Tab Content */}
-      <main className="max-w-6xl mx-auto px-6 py-12">
+      <main className="w-full px-6 lg:px-12 py-12">
         {/* Team Management Tab */}
         {activeTab === "team" && (
           <div className="space-y-8">

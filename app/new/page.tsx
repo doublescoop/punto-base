@@ -1000,7 +1000,7 @@ export default function NewIssueWizard() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="border-b border-border/30">
-        <div className="max-w-4xl mx-auto px-6 py-8">
+        <div className="w-full px-6 lg:px-12 py-8">
           <div className="flex items-start justify-between mb-6">
             <button
               onClick={() => router.push("/profile")}
@@ -1035,7 +1035,7 @@ export default function NewIssueWizard() {
 
       {/* Progress Steps */}
       <div className="border-b border-border/20 bg-card/30 backdrop-blur-sm">
-        <div className="max-w-4xl mx-auto px-6 py-6">
+        <div className="w-full px-6 lg:px-12 py-6">
           <div className="flex items-center justify-between">
             {steps.map((step, index) => {
               const isActive = step.id === currentStep;
@@ -1065,13 +1065,13 @@ export default function NewIssueWizard() {
       </div>
 
       {/* Step Content */}
-      <main className="max-w-4xl mx-auto px-6 py-12">
+      <main className="w-full px-6 lg:px-12 py-12">
         {renderStepContent()}
       </main>
 
       {/* Navigation */}
       <div className="border-t border-border/20 bg-card/30 backdrop-blur-sm">
-        <div className="max-w-4xl mx-auto px-6 py-6">
+        <div className="w-full px-6 lg:px-12 py-6">
           <div className="flex items-center justify-between">
             <button
               onClick={prevStep}

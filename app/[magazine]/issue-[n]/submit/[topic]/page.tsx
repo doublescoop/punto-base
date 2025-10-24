@@ -78,7 +78,7 @@ export default function SubmitPage() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="border-b border-border/30">
-        <div className="max-w-4xl mx-auto px-6 py-8">
+        <div className="w-full px-6 lg:px-12 py-8">
           <button
             onClick={() => router.back()}
             className="text-sm text-muted-foreground hover:text-foreground transition-colors mb-6 inline-flex items-center gap-2"
@@ -99,7 +99,7 @@ export default function SubmitPage() {
       {/* Warning Notice */}
       {showWarning && (
         <div className="border-b border-border/20 bg-yellow-50 dark:bg-yellow-900/10">
-          <div className="max-w-4xl mx-auto px-6 py-4">
+          <div className="w-full px-6 lg:px-12 py-4">
             <div className="flex items-start gap-3">
               <AlertTriangle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-0.5 flex-shrink-0" />
               <div className="space-y-2">
@@ -123,7 +123,7 @@ export default function SubmitPage() {
 
       {/* Topic Details */}
       <div className="border-b border-border/20">
-        <div className="max-w-4xl mx-auto px-6 py-6">
+        <div className="w-full px-6 lg:px-12 py-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-6">
               <div>
@@ -183,7 +183,7 @@ export default function SubmitPage() {
       </div>
 
       {/* Submission Form */}
-      <div className="max-w-4xl mx-auto px-6 py-8">
+      <div className="w-full px-6 lg:px-12 py-8">
         <SubmissionForm
           openCall={topicData}
           onBack={() => router.back()}

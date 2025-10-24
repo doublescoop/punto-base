@@ -233,7 +233,7 @@ export default function MagazineOpenCallsPage() {
               backgroundImage: "url('https://images.unsplash.com/photo-1716653055218-0d4b29004105?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsaXRlcmFyeSUyMG1hZ2F6aW5lJTIwb3BlbiUyMGJvb2t8ZW58MXx8fHwxNzYwOTEyNDIwfDA&ixlib=rb-4.1.0&q=80&w=1080')"
             }}
           />
-          <div className="max-w-7xl mx-auto px-6 py-12 relative">
+          <div className="w-full px-6 lg:px-12 py-12 relative">
             <div className="flex items-start justify-between">
               <div>
                 <button
@@ -271,7 +271,7 @@ export default function MagazineOpenCallsPage() {
 
         {/* Filters */}
         <div className="border-b border-border/20 bg-card/30 backdrop-blur-sm">
-          <div className="max-w-7xl mx-auto px-6 py-6">
+          <div className="w-full px-6 lg:px-12 py-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Format Filter */}
               <div className="relative">
@@ -330,7 +330,7 @@ export default function MagazineOpenCallsPage() {
         </div>
 
         {/* Grid of Open Calls */}
-        <main className="max-w-7xl mx-auto px-6 py-12">
+        <main className="w-full px-6 lg:px-12 py-12">
           {filteredCalls.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-muted-foreground">
@@ -355,7 +355,7 @@ export default function MagazineOpenCallsPage() {
 
         {/* Footer */}
         <footer className="border-t border-border/20 mt-24">
-          <div className="max-w-7xl mx-auto px-6 py-8">
+          <div className="w-full px-6 lg:px-12 py-8">
             <div className="flex justify-between items-center text-sm text-muted-foreground">
               <div>© 2025 Open Calls Network</div>
               <div className="flex gap-6">
