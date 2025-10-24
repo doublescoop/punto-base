@@ -369,6 +369,12 @@ function NewIssueWizardContent() {
       console.log('Issue response status:', issueResponse.status, issueResponse.statusText);
       console.log('Issue response headers:', Object.fromEntries(issueResponse.headers.entries()));
       
+      if (!issueResponse.ok) {
+        const errorText = await issueResponse.text();
+        console.error('Issue creation failed:', errorText);
+        throw new Error(`Issue creation failed: ${issueResponse.status} ${issueResponse.statusText}`);
+      }
+      
       const issueData = await issueResponse.json();
       console.log('Issue creation response:', issueData);
 
@@ -378,6 +384,9 @@ function NewIssueWizardContent() {
 
       // Step 4: Create magazine editors (exclude founder, only editors)
       const editors = team.slice(1).filter(member => member.wallet && member.wallet.trim() !== '');
+      console.log('Team members for editors:', team);
+      console.log('Filtered editors:', editors);
+      
       if (editors.length > 0) {
         console.log('Creating magazine editors:', editors);
         
@@ -388,14 +397,20 @@ function NewIssueWizardContent() {
           })),
         };
 
-        const editorsResponse = await fetch(`/api/magazines/${actualSlug}/editors`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(editorsPayload),
-        });
+          const editorsResponse = await fetch(`/api/magazines/${actualSlug}/editors`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(editorsPayload),
+          });
 
-        const editorsData = await editorsResponse.json();
-        console.log('Editors creation response:', editorsData);
+          if (!editorsResponse.ok) {
+            const errorText = await editorsResponse.text();
+            console.error('Editors creation failed:', errorText);
+            throw new Error(`Editors creation failed: ${editorsResponse.status} ${editorsResponse.statusText}`);
+          }
+
+          const editorsData = await editorsResponse.json();
+          console.log('Editors creation response:', editorsData);
 
         if (!editorsData.success) {
           console.error('Failed to create editors, but magazine/issue were created:', editorsData.error);
