@@ -14,6 +14,7 @@
     "@farcaster/miniapp-sdk": "^0.1.8",
     "@radix-ui/react-separator": "^1.1.7",
     "@radix-ui/react-slot": "^1.2.3",
+    "@supabase/supabase-js": "^2.76.1",
     "@tanstack/react-query": "^5.81.5",
     "@types/cheerio": "^1.0.0",
     "cheerio": "^1.1.2",
@@ -42,5 +43,14 @@
     "eslint-config-next": "15.3.4",
     "postcss": "^8.5.6",
     "typescript": "^5"
+  },
+  "optionalDependencies": {
+    "lightningcss-darwin-arm64": "^1.28.4",
+    "lightningcss-darwin-x64": "^1.28.4",
+    "lightningcss-linux-arm64-gnu": "^1.28.4",
+    "lightningcss-linux-arm64-musl": "^1.28.4",
+    "lightningcss-linux-x64-gnu": "^1.28.4",
+    "lightningcss-linux-x64-musl": "^1.28.4",
+    "lightningcss-win32-x64-msvc": "^1.28.4"
   }
 }
