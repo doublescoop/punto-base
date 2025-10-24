@@ -4,7 +4,6 @@ import { useState, useEffect, useMemo, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, ArrowRight, Plus, X, Users, Check } from "lucide-react";
 import { SocialLayerEvent } from "@/types/event";
-import { Wallet } from "@coinbase/onchainkit/wallet";
 import { useAccount } from "wagmi";
 import { createMagazineTreasury } from "@/lib/treasury";
 // import { useSessionToken } from "@/lib/hooks/useSessionToken"; // Removed for MVP
@@ -975,8 +974,6 @@ function NewIssueWizardContent() {
               Back to Profile
             </button>
             
-            {/* Wallet Component */}
-            <Wallet />
           </div>
 
           <div className="space-y-4">

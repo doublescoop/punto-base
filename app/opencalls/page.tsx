@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo, useEffect, Suspense } from "react";
-import { Wallet } from "@coinbase/onchainkit/wallet";
 import { useMiniKit } from "@coinbase/onchainkit/minikit";
 import { useRouter, useSearchParams } from "next/navigation";
 import { OpenCallCard } from "../../components/OpenCallCard";
@@ -289,11 +288,8 @@ function OpenCallsPageContent() {
                 </p>
               </div>
               
-              <div className="flex items-center gap-4">
-                {/* Wallet Component */}
-                <Wallet />
-                
-                {isAuthenticated && (
+             <div className="flex items-center gap-4">
+               {isAuthenticated && (
                   <button
                     onClick={() => router.push("/profile")}
                     className="border-2 border-accent px-6 py-3 flex items-center gap-2 hover:bg-accent hover:text-white transition-all relative font-mono text-sm uppercase tracking-wider"

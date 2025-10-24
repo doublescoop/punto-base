@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Wallet } from "@coinbase/onchainkit/wallet";
 import { useMiniKit } from "@coinbase/onchainkit/minikit";
 import { useRouter } from "next/navigation";
 // import { ArrowRight, ExternalLink } from "lucide-react";
@@ -143,10 +142,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Wallet Component - Fixed Position */}
-        <div className="fixed top-6 right-6 z-20">
-          <Wallet />
-        </div>
       </section>
 
       {/* Footer */}

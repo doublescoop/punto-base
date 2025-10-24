@@ -2,7 +2,6 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { Wallet } from "@coinbase/onchainkit/wallet";
 import { useMiniKit } from "@coinbase/onchainkit/minikit";
 import { OpenCallCard } from "../../../components/OpenCallCard";
 import { SubmissionDetail } from "../../../components/SubmissionDetail";
@@ -250,9 +249,6 @@ export default function MagazineOpenCallsPage() {
               </div>
               
               <div className="flex items-center gap-4">
-                {/* Wallet Component */}
-                <Wallet />
-                
                 {isAuthenticated && (
                   <button
                     onClick={() => router.push("/profile")}
