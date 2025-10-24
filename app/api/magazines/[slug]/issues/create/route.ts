@@ -169,7 +169,7 @@ export async function POST(
       bounty_amount: topic.bountyAmount,
       slots_needed: topic.maxSubmissions || 1,
       position: index,
-      status: 'open',
+      status: 'UNFILLED', // Use valid status from CHECK constraint
       // Use frontend values instead of hardcoded defaults
       format: topic.format || 'open', // Use actual format from frontend
       is_open_call: topic.isOpenCall !== false, // Use actual value, default true

@@ -11,9 +11,10 @@ interface SubmissionWithAuthor extends Submission {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { issueId: string } }
+  { params }: { params: Promise<{ issueId: string }> }
 ) {
   try {
+    const { issueId } = await params;
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status'); // Optional filter
 
@@ -23,7 +24,7 @@ export async function GET(
         *,
         users!submissions_author_id_fkey (id, wallet_address, display_name, avatar)
       `)
-      .eq('issue_id', params.issueId)
+      .eq('issue_id', issueId)
       .order('created_at', { ascending: false });
 
     if (status) {
