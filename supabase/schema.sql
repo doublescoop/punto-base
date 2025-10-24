@@ -101,7 +101,7 @@ CREATE TABLE issues (
   source_event_platform TEXT,
   
   -- Status
-  status TEXT NOT NULL DEFAULT 'DRAFT',
+  status TEXT NOT NULL DEFAULT 'DRAFT' CHECK (status IN ('DRAFT', 'OPEN', 'CLOSED', 'PUBLISHED', 'ARCHIVED')),
   deadline TIMESTAMPTZ NOT NULL,
   
   -- Treasury
@@ -147,7 +147,7 @@ CREATE TABLE topics (
   guidelines TEXT,
   
   -- Status
-  status TEXT NOT NULL DEFAULT 'UNFILLED',
+  status TEXT NOT NULL DEFAULT 'UNFILLED' CHECK (status IN ('UNFILLED', 'FILLED', 'LOCKED')),
   
   -- Timestamps
   created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -181,10 +181,10 @@ CREATE TABLE submissions (
   ipfs_cid TEXT,
   
   -- Status
-  status TEXT NOT NULL DEFAULT 'SUBMITTED',
+  status TEXT NOT NULL DEFAULT 'SUBMITTED' CHECK (status IN ('SUBMITTED', 'UNDER_REVIEW', 'ACCEPTED', 'REJECTED', 'WITHDRAWN')),
   
   -- Payment
-  payment_status TEXT NOT NULL DEFAULT 'NOT_APPLICABLE',
+  payment_status TEXT NOT NULL DEFAULT 'NOT_APPLICABLE' CHECK (payment_status IN ('NOT_APPLICABLE', 'PENDING', 'PROCESSING', 'COMPLETED', 'FAILED')),
   bounty_amount INTEGER NOT NULL, -- USDC cents
   paid_at TIMESTAMPTZ,
   transaction_hash TEXT,
@@ -240,11 +240,11 @@ CREATE TABLE payments (
   
   -- Payment details
   amount INTEGER NOT NULL, -- USDC cents
-  currency TEXT NOT NULL DEFAULT 'USDC',
-  role TEXT NOT NULL, -- 'CONTRIBUTOR', 'EDITOR', 'FOUNDER', 'COMMISSIONED'
+  currency TEXT NOT NULL DEFAULT 'USDC' CHECK (currency IN ('USDC', 'ETH', 'BASE')),
+  role TEXT NOT NULL CHECK (role IN ('CONTRIBUTOR', 'EDITOR', 'FOUNDER', 'COMMISSIONED')),
   
   -- Status
-  status TEXT NOT NULL DEFAULT 'PENDING',
+  status TEXT NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'PROCESSING', 'COMPLETED', 'FAILED', 'CANCELLED')),
   
   -- Blockchain
   transaction_hash TEXT,
