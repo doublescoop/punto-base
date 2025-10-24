@@ -72,9 +72,8 @@ export function createMagazineTreasury(
  * This would replace the simple address generation above
  */
 export async function deployMagazineTreasuryContract(
-  founderAddress: string,
-  magazineName: string,
-  _teamMembers: string[] = []
+  _founderAddress: string,
+  _magazineName: string
 ): Promise<string> {
   // TODO: Deploy actual smart contract treasury
   // - Multi-signature capability

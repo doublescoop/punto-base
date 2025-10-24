@@ -24,18 +24,19 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/client';
-import type { Submission } from '@/types/schema';
+
 
 export const runtime = 'edge';
 
 interface CreateSubmissionRequest {
   topicId: string;
   authorId: string;
-  authorName: string;
-  authorWallet: string;
+  magazineId: string;
+  title?: string;
+  description?: string;
   content: string;
   mediaUrls?: string[];
-  isAnonymous?: boolean;
+  bountyAmount?: number;
 }
 
 export async function POST(request: NextRequest) {
@@ -43,31 +44,22 @@ export async function POST(request: NextRequest) {
     const body: CreateSubmissionRequest = await request.json();
 
     // Validate required fields
-    if (!body.topicId || !body.authorId || !body.authorName || !body.authorWallet || !body.content) {
+    if (!body.topicId || !body.authorId || !body.magazineId || !body.content) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Missing required fields: topicId, authorId, authorName, authorWallet, content',
+          error: 'Missing required fields: topicId, authorId, magazineId, content',
         },
         { status: 400 }
       );
     }
 
-    // Validate wallet address (Base address format)
-    if (!/^0x[a-fA-F0-9]{40}$/.test(body.authorWallet)) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Invalid wallet address format',
-        },
-        { status: 400 }
-      );
-    }
+    // Wallet validation removed - handled by auth
 
     // Verify topic exists and is open
     const { data: topic, error: topicError } = await supabaseAdmin
       .from('topics')
-      .select('id, status, max_submissions, issue_id')
+      .select('id, status, slots_needed, issue_id')
       .eq('id', body.topicId)
       .single();
 
@@ -92,14 +84,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if max submissions reached
-    if (topic.max_submissions) {
+    if (topic.slots_needed) {
       const { count } = await supabaseAdmin
         .from('submissions')
         .select('id', { count: 'exact', head: true })
         .eq('topic_id', body.topicId)
         .in('status', ['pending', 'accepted']);
 
-      if (count && count >= topic.max_submissions) {
+      if (count && count >= topic.slots_needed) {
         return NextResponse.json(
           {
             success: false,
@@ -132,12 +124,15 @@ export async function POST(request: NextRequest) {
     const submissionData = {
       topic_id: body.topicId,
       author_id: body.authorId,
-      author_name: body.authorName,
-      author_wallet: body.authorWallet,
+      title: body.title || 'Untitled',
+      description: body.description || null,
       content: body.content,
       media_urls: body.mediaUrls || [],
-      is_anonymous: body.isAnonymous || false,
-      status: 'pending' as const,
+      status: 'pending',
+      issue_id: topic.issue_id,
+      magazine_id: body.magazineId,
+      bounty_amount: body.bountyAmount || 0,
+      payment_status: 'pending',
     };
 
     const { data: submission, error: submissionError } = await supabaseAdmin
@@ -157,24 +152,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Transform to frontend format
-    const responseSubmission: Submission = {
-      id: submission.id as `sub_${string}`,
-      topicId: submission.topic_id as `topic_${string}`,
-      authorId: submission.author_id as `user_${string}`,
-      authorName: submission.author_name,
-      authorWallet: submission.author_wallet,
-      content: submission.content,
-      mediaUrls: submission.media_urls,
-      isAnonymous: submission.is_anonymous,
-      status: submission.status as Submission['status'],
-      submittedAt: submission.submitted_at,
-      reviewedAt: submission.reviewed_at || undefined,
-      reviewedBy: submission.reviewed_by as `user_${string}` | undefined,
-      reviewNotes: submission.review_notes || undefined,
-      createdAt: submission.created_at,
-      updatedAt: submission.updated_at,
-    };
+    // Return submission data directly
+    const responseSubmission = submission;
 
     return NextResponse.json({
       success: true,

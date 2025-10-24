@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { ArrowLeft, Copy, Download, Check } from "lucide-react";
 
 // Mock data - in real app this would come from API
@@ -310,7 +310,6 @@ const OpenCallCard = ({ openCall }: { openCall: {
 };
 
 export default function MagazineSuccessPage() {
-  const _params = useParams();
   const router = useRouter();
   const [magazineData, setMagazineData] = useState(mockMagazineData);
 

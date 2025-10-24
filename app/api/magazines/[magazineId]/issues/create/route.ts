@@ -28,6 +28,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/client';
+import type { Database } from '@/database.types';
 import type { MagazineIssue } from '@/types/schema';
 
 export const runtime = 'edge';
@@ -94,30 +95,31 @@ export async function POST(
 
     // Get the next issue number
     const { data: existingIssues } = await supabaseAdmin
-      .from('magazine_issues')
+      .from('issues')
       .select('issue_number')
       .eq('magazine_id', magazineId)
       .order('issue_number', { ascending: false })
       .limit(1);
 
     const nextIssueNumber = existingIssues && existingIssues.length > 0
-      ? existingIssues[0].issue_number + 1
+      ? (existingIssues[0] as { issue_number: number }).issue_number + 1
       : 1;
 
     // Create issue
-    const issueData = {
+    const issueData: Database['public']['Tables']['issues']['Insert'] = {
       magazine_id: magazineId,
       issue_number: nextIssueNumber,
       title: body.title,
       description: body.description,
-      cover_image_url: body.coverImageUrl,
-      status: 'planning' as const,
-      submission_deadline: body.submissionDeadline,
-      publication_date: body.publicationDate,
+      status: 'DRAFT',
+      deadline: body.submissionDeadline,
+      treasury_address: '0x0000000000000000000000000000000000000000', // Placeholder - will be updated when treasury is created
+      required_funding: 0, // Will be calculated later
+      current_balance: 0,
     };
 
     const { data: issue, error: issueError } = await supabaseAdmin
-      .from('magazine_issues')
+      .from('issues')
       .insert(issueData)
       .select()
       .single();
@@ -139,9 +141,11 @@ export async function POST(
       title: topic.title,
       description: topic.description,
       bounty_amount: topic.bountyAmount,
-      max_submissions: topic.maxSubmissions || null,
+      slots_needed: topic.maxSubmissions || 1,
       position: index,
-      status: 'open' as const,
+      status: 'open',
+      format: 'mixed', // Default format
+      is_open_call: true, // All topics are open calls in this API
     }));
 
     const { data: topics, error: topicsError } = await supabaseAdmin
@@ -152,7 +156,7 @@ export async function POST(
     if (topicsError) {
       console.error('Failed to create topics:', topicsError);
       // Rollback: delete the issue
-      await supabaseAdmin.from('magazine_issues').delete().eq('id', issue.id);
+      await supabaseAdmin.from('issues').delete().eq('id', issue.id);
       return NextResponse.json(
         {
           success: false,
@@ -162,21 +166,8 @@ export async function POST(
       );
     }
 
-    // Transform to frontend format
-    const responseIssue: MagazineIssue = {
-      id: issue.id as `issue_${string}`,
-      magazineId: issue.magazine_id as `mag_${string}`,
-      issueNumber: issue.issue_number,
-      title: issue.title,
-      description: issue.description,
-      coverImageUrl: issue.cover_image_url || undefined,
-      status: issue.status as MagazineIssue['status'],
-      submissionDeadline: issue.submission_deadline,
-      publicationDate: issue.publication_date,
-      publishedAt: issue.published_at || undefined,
-      createdAt: issue.created_at,
-      updatedAt: issue.updated_at,
-    };
+    // Return issue data directly (types now match database)
+    const responseIssue: MagazineIssue = issue;
 
     return NextResponse.json({
       success: true,

@@ -1,4 +1,4 @@
-import { HOSTNAME, SITE_NAME } from "@/lib/constants";
+import { SITE_NAME } from "@/lib/constants";
 import Link from "next/link";
 import React from "react";
 import HeaderProfile from "./HeaderProfile";
@@ -16,7 +16,7 @@ const Header = async (): Promise<JSX.Element> => {
 
   const id = session?.user.id;
 
-  let { data } = await getProfile(id);
+  const profile = await getProfile(id);
 
   // if (!profile) return null;
   return (
@@ -26,8 +26,8 @@ const Header = async (): Promise<JSX.Element> => {
       </Link>
 
       <div className="flex items-center">
-        {data ? (
-          <HeaderProfile id={id} profile={data} />
+        {profile ? (
+          <HeaderProfile id={id} profile={profile} />
         ) : (
           <Button asChild>
             <Link href="/auth">Login</Link>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { MagazineIssue } from "../../../components/MagazineIssue";
 import { ArticleDetail } from "../../../components/ArticleDetail";
@@ -162,7 +162,7 @@ export default function IssuePage() {
         <div className="text-center space-y-4">
           <h1 className="font-mono text-2xl">Issue Not Found</h1>
           <p className="text-muted-foreground">
-            The issue you're looking for doesn't exist.
+            The issue you&apos;re looking for doesn&apos;t exist.
           </p>
           <button
             onClick={() => router.push("/opencalls")}

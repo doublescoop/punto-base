@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Inter, Source_Code_Pro } from "next/font/google";
-import { SafeArea } from "@coinbase/onchainkit/minikit";
 import { minikitConfig } from "@/minikit.config";
 import { RootProvider } from "./rootProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -52,7 +51,6 @@ export default function RootLayout({
           <link rel="icon" href="/favicon.ico" />
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-          <link href="https://fonts.googleapis.com/css2?family=Mynerve&family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
         </head>
         <body
           className={cn(
@@ -67,12 +65,10 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <SafeArea>
-              <main>
-                {children}
-              </main>
-              <Toaster />
-            </SafeArea>
+            <main>
+              {children}
+            </main>
+            <Toaster />
           </ThemeProvider>
         </body>
       </html>

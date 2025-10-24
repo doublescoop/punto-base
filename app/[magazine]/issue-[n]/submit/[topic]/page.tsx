@@ -1,12 +1,28 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { SubmissionForm } from "../../../../../components/SubmissionForm";
 import { ArrowLeft, AlertTriangle } from "lucide-react";
 
+// Type definitions
+interface TopicData {
+  id: string;
+  title: string;
+  magazine: string;
+  dueDate: string;
+  bounty: string;
+  category: string;
+  requirements: string;
+  fileCaps: {
+    maxSize: string;
+    formats: string;
+    maxFiles: number;
+  };
+}
+
 // Mock data for topics
-const mockTopics = {
+const mockTopics: Record<string, Record<string, TopicData>> = {
   "concrete-light-12": {
     "fragments-of-urban-decay": {
       id: "1",
@@ -52,7 +68,8 @@ export default function SubmitPage() {
 
   // Generate the issue key and get topic data
   const issueKey = `${magazineName}-${issueNumber}`;
-  const topicData = mockTopics[issueKey as keyof typeof mockTopics]?.[topicSlug as keyof typeof mockTopics[typeof issueKey]];
+  const issueTopics = mockTopics[issueKey];
+  const topicData: TopicData | undefined = issueTopics ? issueTopics[topicSlug] : undefined;
 
   // If topic doesn't exist, redirect or show error
   if (!topicData) {
@@ -61,7 +78,7 @@ export default function SubmitPage() {
         <div className="text-center space-y-4">
           <h1 className="font-mono text-2xl">Topic Not Found</h1>
           <p className="text-muted-foreground">
-            The submission topic you're looking for doesn't exist.
+            The submission topic you&apos;re looking for doesn&apos;t exist.
           </p>
           <button
             onClick={() => router.push("/opencalls")}
@@ -107,7 +124,7 @@ export default function SubmitPage() {
                   Important Notice
                 </h3>
                 <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                  <strong>Submissions are final and non-cancellable.</strong> Make sure you're happy with your work before you send it. Once submitted, you cannot withdraw or edit your submission.
+                  <strong>Submissions are final and non-cancellable.</strong> Make sure you&apos;re happy with your work before you send it. Once submitted, you cannot withdraw or edit your submission.
                 </p>
                 <button
                   onClick={() => setShowWarning(false)}

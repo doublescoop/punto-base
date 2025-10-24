@@ -1,14 +1,13 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, ArrowRight, Plus, X, Users, Check } from "lucide-react";
 import { SocialLayerEvent } from "@/types/event";
-import { FundCard, FundButton } from "@coinbase/onchainkit/fund";
 import { Wallet } from "@coinbase/onchainkit/wallet";
 import { useAccount } from "wagmi";
-import { useSessionToken } from "@/lib/hooks/useSessionToken";
 import { createMagazineTreasury } from "@/lib/treasury";
+// import { useSessionToken } from "@/lib/hooks/useSessionToken"; // Removed for MVP
 
 type WizardStep = "event" | "topics" | "theme" | "treasury" | "team" | "review";
 
@@ -29,6 +28,7 @@ interface TeamMember {
   role: "founder" | "editor";
   wallet: string;
   email: string;
+  nickname?: string;
 }
 
 const mockThemes = [
@@ -174,11 +174,11 @@ const getRandomTopicTemplate = (usedTemplates: Set<number>) => {
   return { template: defaultTopicTemplates[randomIndex], usedIndex: randomIndex, resetUsed: false };
 };
 
-export default function NewIssueWizard() {
+function NewIssueWizardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { address } = useAccount();
-  const { sessionToken, isLoading: isTokenLoading, error: tokenError } = useSessionToken(address);
+  // const { sessionToken, isLoading: isTokenLoading, error: tokenError } = useSessionToken(address); // Removed for MVP
   const [currentStep, setCurrentStep] = useState<WizardStep>("event");
   const [eventUrl, setEventUrl] = useState("");
   const [scrapedEventData, setScrapedEventData] = useState<SocialLayerEvent | null>(null);
@@ -427,7 +427,7 @@ export default function NewIssueWizard() {
                         value={scrapedEventData?.location?.name || ''}
                         onChange={(e) => setScrapedEventData(prev => prev ? {
                           ...prev,
-                          location: { name: e.target.value }
+                          location: { ...prev.location, name: e.target.value }
                         } : null)}
                         className="font-display text-lg text-foreground bg-transparent border-0 border-b border-border/30 focus:border-accent focus:outline-none text-center w-full"
                       />
@@ -449,7 +449,7 @@ export default function NewIssueWizard() {
                         value={scrapedEventData?.organization?.name || ''}
                         onChange={(e) => setScrapedEventData(prev => prev ? {
                           ...prev,
-                          organization: { name: e.target.value }
+                          organization: { ...prev.organization, name: e.target.value }
                         } : null)}
                         className="font-display text-lg text-foreground bg-transparent border-0 border-b border-border/30 focus:border-accent focus:outline-none text-center w-full"
                       />
@@ -781,53 +781,17 @@ export default function NewIssueWizard() {
                     Preview Fund Flow (Demo)
                   </button>
                 </div>
-              ) : tokenError ? (
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-6 rounded-lg">
-                  <h3 className="font-mono text-lg mb-2 text-red-800 dark:text-red-200">Authentication Error</h3>
-                  <p className="text-red-600 dark:text-red-300 mb-4">
-                    Failed to generate session token: {tokenError}
-                  </p>
-                  <button 
-                    onClick={() => window.location.reload()}
-                    className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
-                  >
-                    Retry
-                  </button>
-                </div>
-              ) : sessionToken && !isTokenLoading ? (
-                <div className="bg-card/50 backdrop-blur-sm p-6 rounded-lg border border-border/50">
-                  <h3 className="font-mono text-lg mb-4">Fund Your Treasury</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Use the funding interface below to add USDC to your magazine treasury.
-                  </p>
-                  <FundCard
-                    sessionToken={sessionToken}
-                    assetSymbol="USDC"
-                    country="US"
-                    currency="USD"
-                    presetAmounts={[totalTopicBounties, totalTopicBounties + Math.ceil(totalTopicBounties * 0.1)]}
-                  />
-                </div>
               ) : (
                 <div className="bg-card/50 backdrop-blur-sm p-6 rounded-lg border border-border/50">
                   <h3 className="font-mono text-lg mb-4">Fund Your Treasury</h3>
-                  <div className="flex items-center justify-center py-8">
-                    <div className="text-center space-y-2">
-                      <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin mx-auto"></div>
-                      <p className="text-sm text-muted-foreground">Loading funding interface...</p>
-                    </div>
+                  <p className="text-muted-foreground mb-4">
+                    Treasury funding will be available after deployment. For now, you can proceed to create your magazine.
+                  </p>
+                  <div className="bg-muted/50 p-4 rounded-lg">
+                    <p className="text-sm text-muted-foreground">
+                      💡 <strong>Coming soon:</strong> Direct USDC funding via Coinbase onramp
+                    </p>
                   </div>
-                </div>
-              )}
-
-              {/* Quick Fund Button Alternative */}
-              {address && sessionToken && (
-                <div className="text-center">
-                  <p className="text-sm text-muted-foreground mb-3">Or, if this is NOT your first mag, use the quick fund to top up:</p>
-                  <FundButton 
-                    sessionToken={sessionToken}
-                    text="Fund Treasury Wallet"
-                  />
                 </div>
               )}
             </div>
@@ -870,12 +834,12 @@ export default function NewIssueWizard() {
                       />
                     </div>
                     <div>
-                    <label className="block text-sm font-medium mb-1">Nick Name</label>
+                    <label className="block text-sm font-medium mb-1">Nickname (Optional)</label>
                       <input
                         type="text"
-                        placeholder="0x..."
-                        value={member.name}
-                        onChange={(e) => updateTeamMember(member.name, "nickname", e.target.value)}
+                        placeholder="Display name..."
+                        value={member.nickname || ''}
+                        onChange={(e) => updateTeamMember(member.id, "nickname", e.target.value)}
                         className="w-full px-3 py-2 bg-background/50 backdrop-blur-sm border border-border/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
                       />
                     </div>
@@ -1122,5 +1086,13 @@ export default function NewIssueWizard() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function NewIssueWizard() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <NewIssueWizardContent />
+    </Suspense>
   );
 }

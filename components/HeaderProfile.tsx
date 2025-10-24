@@ -15,15 +15,14 @@ import {
 } from "./ui/dropdown-menu";
 import { SECURE_DIRECTORIES } from "@/lib/constants";
 import { toast } from "sonner";
-import { revalidateTag } from "next/cache";
 import revalidate from "@/lib/dal/revalidate";
 
 interface HeaderProfileProps {
   id: string | undefined;
-  profile: any; // You might want to define a proper Profile type
+  profile: Record<string, unknown>; // You might want to define a proper Profile type
 }
 
-const HeaderProfile = ({ id, profile }: HeaderProfileProps): JSX.Element | null => {
+const HeaderProfile = ({ profile }: HeaderProfileProps): JSX.Element | null => {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -31,7 +30,7 @@ const HeaderProfile = ({ id, profile }: HeaderProfileProps): JSX.Element | null 
     const supabase = supaBrowser();
     revalidate("profile");
     const { error } = await supabase.auth.signOut();
-    if (error) toast.error("Error logging out:", error.message);
+    if (error) toast.error(`Error logging out: ${error.message}`);
     router.refresh();
     if (SECURE_DIRECTORIES.includes(pathname))
       router.replace("/auth?next=" + pathname);
@@ -42,12 +41,12 @@ const HeaderProfile = ({ id, profile }: HeaderProfileProps): JSX.Element | null 
       <DropdownMenu>
         <DropdownMenuTrigger className="focus-visible:outline-0">
           <Avatar className="animate-pop-in">
-            {profile.username && (
+            {profile.display_name && (
               <AvatarFallback className="bg-primary ">
-                {getInitials(profile.full_name)}
+                {getInitials(profile.display_name as string)}
               </AvatarFallback>
             )}
-            <AvatarImage src={profile.avatar_url} className="animate-pop-in" />
+            <AvatarImage src={profile.avatar as string} className="animate-pop-in" />
           </Avatar>
         </DropdownMenuTrigger>
 

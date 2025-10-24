@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Lock, ExternalLink, Copy, FileText, BookOpen, Users, Briefcase, ArrowRight } from "lucide-react";
+import { Lock, Copy, FileText, BookOpen, Users, Briefcase, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
-import { StatusChip } from "./StatusChip";
+
 import { SubmissionDetailDrawer } from "./SubmissionDetailDrawer";
 import { LiquidGlass } from "./LiquidGlass";
 
@@ -107,7 +107,7 @@ export function MyPage({ onBack, onExploreOpenCalls, onReadIssue }: MyPageProps)
       label: "Editor",
       icon: Users,
       locked: !mockUserData.roles.isEditor,
-      lockMessage: "You'll unlock this when a Founder adds you as an Editor.",
+      lockMessage: "You&apos;ll unlock this when a Founder adds you as an Editor.",
     },
     {
       id: "library" as const,
@@ -255,7 +255,7 @@ export function MyPage({ onBack, onExploreOpenCalls, onReadIssue }: MyPageProps)
               ) : (
                 <div className="bg-muted/30 backdrop-blur-sm p-12 text-center space-y-4 rounded-lg">
                   <p className="text-muted-foreground">
-                    You haven't submitted yet.
+                    You haven&apos;t submitted yet.
                   </p>
                   <button
                     onClick={onExploreOpenCalls || onBack}
@@ -399,8 +399,8 @@ export function MyPage({ onBack, onExploreOpenCalls, onReadIssue }: MyPageProps)
               <p className="text-muted-foreground">{tabs[2].lockMessage}</p>
             </div>
             <p className="text-sm text-muted-foreground max-w-md mx-auto">
-              Editors are invited by Founders to help curate submissions. Once you're added to an editorial team, you'll see your assigned Issues here.
-            </p>
+                Editors are invited by Founders to help curate submissions. Once you&apos;re added to an editorial team, you&apos;ll see your assigned Issues here.
+              </p>
           </div>
         )}
 

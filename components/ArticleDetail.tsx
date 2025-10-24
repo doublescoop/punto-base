@@ -262,6 +262,11 @@ export function ArticleDetail({
               <h1 className="text-2xl mb-4" style={{ fontFamily: 'Georgia, serif', lineHeight: '1.2' }}>
                 {title}
               </h1>
+              {subtitle && (
+                <p className="text-base italic text-muted-foreground my-4" style={{ fontFamily: 'Georgia, serif' }}>
+                  {subtitle}
+                </p>
+              )}
               <div className="text-[10px] uppercase tracking-wide mb-4" style={{ fontFamily: 'Helvetica Neue, Helvetica, Arial, sans-serif' }}>
                 SHARE: FACEBOOK, TWITTER
               </div>

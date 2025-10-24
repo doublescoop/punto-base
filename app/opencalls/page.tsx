@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, Suspense } from "react";
 import { Wallet } from "@coinbase/onchainkit/wallet";
 import { useMiniKit } from "@coinbase/onchainkit/minikit";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -167,7 +167,7 @@ const mockSubmissions: { [key: string]: Submission[] } = {
   ],
 };
 
-export default function OpenCallsPage() {
+function OpenCallsPageContent() {
   const { setMiniAppReady, isMiniAppReady } = useMiniKit();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -430,5 +430,13 @@ export default function OpenCallsPage() {
           </div>
         </footer>
       </div>
+  );
+}
+
+export default function OpenCallsPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <OpenCallsPageContent />
+    </Suspense>
   );
 }

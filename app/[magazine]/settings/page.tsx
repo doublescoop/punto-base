@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { ArrowLeft, Users, DollarSign, Palette, Trash2, Save, Plus, X } from "lucide-react";
+import { ArrowLeft, Users, DollarSign, Palette, Trash2, Save, Plus, Settings } from "lucide-react";
 
 interface TeamMember {
   id: string;
@@ -20,12 +20,12 @@ const mockSettingsData = {
   "concrete-light": {
     magazineName: "Concrete & Light",
     team: [
-      { id: "1", role: "founder", wallet: "0x742d...4a8c", email: "founder@concretelight.com" },
-      { id: "2", role: "editor", wallet: "0x8f3a...2b7d", email: "editor@concretelight.com" }
+      { id: "1", role: "founder" as const, wallet: "0x742d...4a8c", email: "founder@concretelight.com" },
+      { id: "2", role: "editor" as const, wallet: "0x8f3a...2b7d", email: "editor@concretelight.com" }
     ],
     roleStipends: [
-      { role: "founder", amount: "50" },
-      { role: "editor", amount: "30" }
+      { role: "founder" as const, amount: "50" },
+      { role: "editor" as const, amount: "30" }
     ],
     theme: "clean-gallery",
     accentColors: ["blue", "purple"],
@@ -39,7 +39,9 @@ export default function SettingsPage() {
   const params = useParams();
   const magazineName = params.magazine as string;
 
-  const [activeTab, setActiveTab] = useState<"team" | "payments" | "theme" | "general">("team");
+  type Tab = "team" | "payments" | "theme" | "general";
+
+  const [activeTab, setActiveTab] = useState<Tab>("team");
   const [team, setTeam] = useState<TeamMember[]>([]);
   const [roleStipends, setRoleStipends] = useState<RoleStipend[]>([]);
   const [safeAddress, setSafeAddress] = useState("");
@@ -48,13 +50,24 @@ export default function SettingsPage() {
 
   const settingsData = mockSettingsData[magazineName as keyof typeof mockSettingsData];
 
+  // Initialize state with mock data
+  useEffect(() => {
+    if (settingsData) {
+      setTeam(settingsData.team);
+      setRoleStipends(settingsData.roleStipends);
+      setSafeAddress(settingsData.safeAddress);
+      setSelectedTheme(settingsData.theme);
+      setSelectedColors(settingsData.accentColors);
+    }
+  }, [settingsData]);
+
   if (!settingsData) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4">
           <h1 className="font-mono text-2xl">Magazine Not Found</h1>
           <p className="text-muted-foreground">
-            The magazine you're looking for doesn't exist.
+            The magazine you&apos;re looking for doesn&apos;t exist.
           </p>
           <button
             onClick={() => router.push("/profile")}
@@ -66,15 +79,6 @@ export default function SettingsPage() {
       </div>
     );
   }
-
-  // Initialize state with mock data
-  useState(() => {
-    setTeam(settingsData.team);
-    setRoleStipends(settingsData.roleStipends);
-    setSafeAddress(settingsData.safeAddress);
-    setSelectedTheme(settingsData.theme);
-    setSelectedColors(settingsData.accentColors);
-  });
 
   const addTeamMember = () => {
     const newMember: TeamMember = {
@@ -90,7 +94,7 @@ export default function SettingsPage() {
     setTeam(team.filter(member => member.id !== id));
   };
 
-  const updateTeamMember = (id: string, field: keyof TeamMember, value: any) => {
+  const updateTeamMember = (id: string, field: keyof TeamMember, value: string) => {
     setTeam(team.map(member => 
       member.id === id ? { ...member, [field]: value } : member
     ));
@@ -159,7 +163,7 @@ export default function SettingsPage() {
               {settingsData.magazineName} Settings
             </h1>
             <p className="text-muted-foreground">
-              Manage your magazine's team, payments, and appearance
+              Manage your magazine&apos;s team, payments, and appearance
             </p>
           </div>
         </div>
@@ -174,7 +178,7 @@ export default function SettingsPage() {
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
+                  onClick={() => setActiveTab(tab.id as Tab)}
                   className={`px-6 py-3 border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${
                     activeTab === tab.id
                       ? "border-accent text-accent"
@@ -291,7 +295,7 @@ export default function SettingsPage() {
             <div>
               <h2 className="font-mono text-xl mb-4">Theme & Colors</h2>
               <p className="text-muted-foreground mb-6">
-                Customize your magazine's visual appearance and branding.
+                Customize your magazine&apos;s visual appearance and branding.
               </p>
             </div>
 
@@ -348,7 +352,7 @@ export default function SettingsPage() {
             <div>
               <h2 className="font-mono text-xl mb-4">General Settings</h2>
               <p className="text-muted-foreground mb-6">
-                Manage your magazine's core settings and Safe wallet.
+                Manage your magazine&apos;s core settings and Safe wallet.
               </p>
             </div>
 

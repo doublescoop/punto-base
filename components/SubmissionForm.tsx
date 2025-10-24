@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowLeft, Upload, FileText, Image, Film, Music } from "lucide-react";
+import { ArrowLeft, Image, Film, Music } from "lucide-react";
 import { AuthModal } from "./AuthModal";
 
 interface SubmissionFormProps {
@@ -74,11 +74,11 @@ export function SubmissionForm({ openCall, onBack, onSubmitted }: SubmissionForm
 
   const getEditorNotes = () => {
     const notes: { [key: string]: string } = {
-      "1": "We're looking for images that capture the quiet moments of transformation in urban spaces. Don't worry about technical perfection—we value authenticity and personal perspective. This collection will honor the experience we shared together.",
-      "2": "Your younger self deserves honesty, not perfection. Write from the heart. We're building this together as a way to process and share what we learned at the gathering. Every voice matters.",
-      "3": "Sound carries memory. Whether it's a field recording, a voice memo, or a composed piece—if it resonates with your experience, it belongs here. We'll listen to every submission with care.",
+      "1": "We&apos;re looking for images that capture the quiet moments of transformation in urban spaces. Don&apos;t worry about technical perfection—we value authenticity and personal perspective. This collection will honor the experience we shared together.",
+      "2": "Your younger self deserves honesty, not perfection. Write from the heart. We&apos;re building this together as a way to process and share what we learned at the gathering. Every voice matters.",
+      "3": "Sound carries memory. Whether it&apos;s a field recording, a voice memo, or a composed piece—if it resonates with your experience, it belongs here. We&apos;ll listen to every submission with care.",
       "4": "Take your time with this. We want depth over speed. This essay collection will be a document of our collective thinking. Feel free to reference conversations from the event.",
-      "5": "One minute can hold everything. Whether polished or raw, your video is a contribution to our shared narrative. We're in this together.",
+      "5": "One minute can hold everything. Whether polished or raw, your video is a contribution to our shared narrative. We&apos;re in this together.",
       "6": "Objects tell stories. Share what changed you during our time together. A photo, a reflection—whatever feels true.",
       "7": "The archive whispers to those who listen. Capture what you heard in the silence between moments.",
     };
@@ -103,7 +103,7 @@ export function SubmissionForm({ openCall, onBack, onSubmitted }: SubmissionForm
         "1,000-5,000 words",
         "Formatted in paragraphs",
         "Include title and optional subtitle",
-        "Citations if referencing others' work",
+        "Citations if referencing others&apos; work",
       ],
       video: [
         "30 seconds to 3 minutes",
@@ -139,13 +139,13 @@ export function SubmissionForm({ openCall, onBack, onSubmitted }: SubmissionForm
               What happens now
             </h3>
             <p className="text-sm text-muted-foreground">
-              Editors will review your submission. You'll see status updates in your profile and via email.
+              Editors will review your submission. You&apos;ll see status updates in your profile and via email.
             </p>
             <p className="text-sm text-muted-foreground">
               Most decisions within 3–7 days.
             </p>
             <p className="text-sm">
-              If published, you'll receive {openCall.bounty} via {paymentMethod === "usdc" ? "USDC (0% fee)" : "bank transfer (10% fee)"}.
+              If published, you&apos;ll receive {openCall.bounty} via {paymentMethod === "usdc" ? "USDC (0% fee)" : "bank transfer (10% fee)"}.
             </p>
           </div>
           <div className="text-xs text-muted-foreground">
@@ -206,7 +206,7 @@ export function SubmissionForm({ openCall, onBack, onSubmitted }: SubmissionForm
             </p>
           </div>
 
-          {/* Editor's Note */}
+          {/* Editor&apos;s Note */}
           <div className="space-y-4">
             <h3 className="text-xs uppercase tracking-wider text-muted-foreground">
               From the Editors
@@ -240,7 +240,7 @@ export function SubmissionForm({ openCall, onBack, onSubmitted }: SubmissionForm
               Start Your Submission
             </button>
             <p className="text-xs text-muted-foreground text-center mt-4">
-              {!isAuthenticated && "You'll need to create an account or sign in"}
+              {!isAuthenticated && "You&apos;ll need to create an account or sign in"}
             </p>
           </div>
         </div>
@@ -287,7 +287,7 @@ export function SubmissionForm({ openCall, onBack, onSubmitted }: SubmissionForm
         {/* Contextual reminder */}
         <div className="mb-8 border-l-2 border-accent pl-6 py-3 bg-accent/5">
           <p className="text-sm italic">
-            Remember: This is your contribution to our collective experience. There's no wrong way to share what matters to you.
+            Remember: This is your contribution to our collective experience. There&apos;s no wrong way to share what matters to you.
           </p>
         </div>
 
@@ -323,6 +323,7 @@ export function SubmissionForm({ openCall, onBack, onSubmitted }: SubmissionForm
                     onChange={(e) => setFormData({ ...formData, file: e.target.files?.[0] || null })}
                   />
                   <label htmlFor="image-upload" className="cursor-pointer space-y-4 block">
+                    {/* eslint-disable-next-line jsx-a11y/alt-text */}
                     <Image className="w-12 h-12 mx-auto text-muted-foreground" />
                     <div>
                       <p className="text-sm">
@@ -538,7 +539,7 @@ export function SubmissionForm({ openCall, onBack, onSubmitted }: SubmissionForm
             
             <div className="text-xs text-muted-foreground text-center space-y-1">
               <p>Payment via {paymentMethod === "usdc" ? "USDC (0% fee)" : "USD (10% fee)"} if published</p>
-              <p>You'll receive an email notification about the editorial decision</p>
+              <p>You&apos;ll receive an email notification about the editorial decision</p>
             </div>
           </div>
         </form>

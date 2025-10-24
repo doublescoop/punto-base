@@ -1,6 +1,6 @@
-import { cn } from "@/lib/utils"
+import { cn } from "./utils"
 
-interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {}
+type SkeletonProps = React.HTMLAttributes<HTMLDivElement>;
 
 function Skeleton({
   className,

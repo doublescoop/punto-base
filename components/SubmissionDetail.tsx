@@ -1,5 +1,5 @@
 import { ArrowLeft, ThumbsUp, ThumbsDown, Meh, Plus } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { AuthModal } from "./AuthModal";
 
 interface Submission {
@@ -31,7 +31,7 @@ export function SubmissionDetail({ openCall, submissions, onBack, onSubmitMine }
 
   const currentSubmission = submissions[currentIndex];
 
-  const handleVote = (vote: "up" | "down" | "hmm") => {
+  const handleVote = useCallback((vote: "up" | "down" | "hmm") => {
     const newVotes = { ...votes, [currentSubmission.id]: vote };
     setVotes(newVotes);
     
@@ -51,7 +51,7 @@ export function SubmissionDetail({ openCall, submissions, onBack, onSubmitMine }
         setCurrentIndex(currentIndex + 1);
       }, 300);
     }
-  };
+  }, [votes, currentSubmission, voteCount, currentIndex, submissions.length]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -70,7 +70,7 @@ export function SubmissionDetail({ openCall, submissions, onBack, onSubmitMine }
 
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [currentIndex, votes, voteCount]);
+  }, [handleVote]);
 
   return (
     <div className="min-h-screen bg-background">

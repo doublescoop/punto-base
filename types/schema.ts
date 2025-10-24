@@ -56,44 +56,21 @@ export interface User {
  * Magazine - A publication created by a founder
  */
 export interface Magazine {
-  id: string; // Format: "mag_{uuid}"
-  
-  // Basic Info
+  id: string;
   name: string;
-  slug: string; // URL-friendly name (e.g., "concrete-light")
+  slug: string;
   description: string;
-  tagline?: string;
-  
-  // Visual Identity
-  coverImage?: string; // IPFS CID or URL
-  logoImage?: string; // IPFS CID or URL
-  theme: MagazineTheme;
-  accentColors: string[]; // Hex color codes (max 2)
-  
-  // Founder & Team
-  founderId: string; // Reference to User.id
-  editorIds: string[]; // References to User.id
-  
-  // Treasury & Payments
-  treasuryAddress: string; // Safe wallet address
-  defaultBountyAmount: number; // Default USDC cents per accepted submission
-  
-  // Settings
-  settings: {
-    isPublic: boolean; // Whether the magazine is publicly visible
-    allowAnonymousSubmissions: boolean;
-    requireApproval: boolean; // Whether submissions need approval
-    minEditorApprovals: number; // Number of editor approvals needed
-  };
-  
-  // Metadata
-  createdAt: string; // ISO 8601
-  updatedAt: string; // ISO 8601
-  
-  // Stats (computed)
-  totalIssues: number;
-  totalSubmissions: number;
-  totalContributors: number;
+  tagline?: string | null;
+  cover_image?: string | null;
+  logo_image?: string | null;
+  theme_id: string;
+  accent_colors: string[];
+  founder_id: string;
+  treasury_address: string;
+  default_bounty_amount: number;
+  is_public?: boolean | null;
+  created_at?: string | null;
+  updated_at?: string | null;
 }
 
 /**
@@ -113,46 +90,25 @@ export interface MagazineTheme {
  * Magazine Issue - A specific edition of a magazine
  */
 export interface MagazineIssue {
-  id: string; // Format: "issue_{uuid}"
-  
-  // Basic Info
-  magazineId: string; // Reference to Magazine.id
-  issueNumber: number; // Sequential number (1, 2, 3, etc.)
-  title?: string; // Optional title for the issue
-  description?: string;
-  
-  // Source Event (if post-event zine)
-  sourceEvent?: {
-    eventId: string; // From scraped event data
-    eventTitle: string;
-    eventDate: string;
-    eventLocation: string;
-    eventUrl: string;
-    platform: 'luma' | 'sociallayer'; // Which platform the event was from
-  };
-  
-  // Status & Timeline
-  status: IssueStatus;
-  deadline: string; // ISO 8601 - when open calls close
-  publishDate?: string; // ISO 8601 - when issue is published
-  
-  // Financial
-  treasuryAddress: string; // Safe wallet address for this issue
-  requiredFunding: number; // Total USDC cents needed
-  currentBalance: number; // Current USDC cents in treasury
-  
-  // Content Structure
-  topicIds: string[]; // References to Topic.id (ordered)
-  
-  // Metadata
-  createdAt: string; // ISO 8601
-  updatedAt: string; // ISO 8601
-  publishedAt?: string; // ISO 8601
-  
-  // Stats (computed)
-  totalSubmissions: number;
-  totalAccepted: number;
-  totalPublished: number;
+  id: string;
+  magazine_id: string;
+  issue_number: number;
+  title?: string | null;
+  description?: string | null;
+  source_event_id?: string | null;
+  source_event_title?: string | null;
+  source_event_date?: string | null;
+  source_event_location?: string | null;
+  source_event_url?: string | null;
+  source_event_platform?: string | null;
+  status: string;
+  deadline: string;
+  treasury_address: string;
+  required_funding: number;
+  current_balance?: number | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+  published_at?: string | null;
 }
 
 /**

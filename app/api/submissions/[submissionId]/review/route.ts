@@ -20,7 +20,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/client';
-import type { Submission } from '@/types/schema';
+
 
 export const runtime = 'edge';
 
@@ -116,10 +116,13 @@ export async function POST(
     if (body.action === 'accept') {
       const paymentData = {
         submission_id: submissionId,
-        recipient_wallet: submission.author_wallet,
-        amount_cents: submission.topics.bounty_amount,
+        recipient_id: submission.author_id,
+        amount: submission.bounty_amount,
         currency: 'USDC' as const,
         status: 'pending' as const,
+        role: 'contributor' as const,
+        issue_id: submission.issue_id,
+        magazine_id: submission.magazine_id,
       };
 
       const { error: paymentError } = await supabaseAdmin
@@ -133,24 +136,8 @@ export async function POST(
       }
     }
 
-    // Transform to frontend format
-    const responseSubmission: Submission = {
-      id: updatedSubmission.id as `sub_${string}`,
-      topicId: updatedSubmission.topic_id as `topic_${string}`,
-      authorId: updatedSubmission.author_id as `user_${string}`,
-      authorName: updatedSubmission.author_name,
-      authorWallet: updatedSubmission.author_wallet,
-      content: updatedSubmission.content,
-      mediaUrls: updatedSubmission.media_urls,
-      isAnonymous: updatedSubmission.is_anonymous,
-      status: updatedSubmission.status as Submission['status'],
-      submittedAt: updatedSubmission.submitted_at,
-      reviewedAt: updatedSubmission.reviewed_at || undefined,
-      reviewedBy: updatedSubmission.reviewed_by as `user_${string}` | undefined,
-      reviewNotes: updatedSubmission.review_notes || undefined,
-      createdAt: updatedSubmission.created_at,
-      updatedAt: updatedSubmission.updated_at,
-    };
+    // Return submission data directly
+    const responseSubmission = updatedSubmission;
 
     return NextResponse.json({
       success: true,

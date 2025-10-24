@@ -104,6 +104,7 @@ export default function BoardPage() {
   const magazineName = params.magazine as string;
 
   const [showPayTable, setShowPayTable] = useState(false);
+  const [, setSelectedTopic] = useState<Topic | null>(null);
 
   const issueData = mockIssueData[magazineName as keyof typeof mockIssueData];
 

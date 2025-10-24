@@ -88,18 +88,13 @@ export async function POST(request: NextRequest) {
       name: body.name,
       slug: body.slug,
       description: body.description,
-      status: 'planning' as const,
       founder_id: body.founderId,
-      cover_image_url: body.coverImageUrl,
-      logo_url: body.logoUrl,
-      theme: 'default',
+      cover_image: body.coverImageUrl || null,
+      logo_image: body.logoUrl || null,
+      theme_id: 'default',
       accent_colors: ['#000000', '#ffffff'],
       treasury_address: '', // Will be set when Safe is created
       default_bounty_amount: body.defaultBountyAmount || 1000, // $10 default
-      source_event: body.eventUrl && body.eventData ? {
-        event_url: body.eventUrl,
-        event_data: body.eventData,
-      } : null,
     };
 
     const { data: magazine, error } = await supabaseAdmin
@@ -119,27 +114,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Transform to frontend format
-    const responseMagazine: Magazine = {
-      id: magazine.id as `mag_${string}`,
-      name: magazine.name,
-      slug: magazine.slug,
-      description: magazine.description,
-      status: magazine.status as Magazine['status'],
-      founderId: magazine.founder_id as `user_${string}`,
-      createdAt: magazine.created_at,
-      updatedAt: magazine.updated_at,
-      coverImageUrl: magazine.cover_image_url || undefined,
-      logoUrl: magazine.logo_url || undefined,
-      theme: magazine.theme,
-      accentColors: magazine.accent_colors,
-      treasuryAddress: magazine.treasury_address,
-      defaultBountyAmount: magazine.default_bounty_amount,
-      sourceEvent: magazine.source_event ? {
-        eventUrl: magazine.source_event.event_url,
-        eventData: magazine.source_event.event_data,
-      } : undefined,
-    };
+    // Return magazine data directly (types now match database)
+    const responseMagazine: Magazine = magazine;
 
     return NextResponse.json({
       success: true,
