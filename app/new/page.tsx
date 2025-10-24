@@ -465,9 +465,9 @@ function NewIssueWizardContent() {
     setTopics(prev => [...prev, newTopic]);
     
     if (resetUsed) {
-      setUsedTemplateIndices(new Set([usedIndex]));
+      setUsedTemplateIndices(new Set([usedIndex].filter(Boolean)));
     } else {
-      setUsedTemplateIndices(prev => new Set([...prev, usedIndex]));
+      setUsedTemplateIndices(prev => new Set([...prev, usedIndex].filter(Boolean)));
     }
   }, [usedTemplateIndices]);
 
@@ -516,14 +516,14 @@ function NewIssueWizardContent() {
     if (stepIndex < steps.length - 1) {
       setCurrentStep(steps[stepIndex + 1].id as WizardStep);
     }
-  }, [currentStep]);
+  }, [currentStep, steps]);
 
   const prevStep = useCallback(() => {
     const stepIndex = steps.findIndex(step => step.id === currentStep);
     if (stepIndex > 0) {
       setCurrentStep(steps[stepIndex - 1].id as WizardStep);
     }
-  }, [currentStep]);
+  }, [currentStep, steps]);
 
   const renderStepContent = () => {
     switch (currentStep) {
@@ -1083,9 +1083,9 @@ function NewIssueWizardContent() {
               <div className="bg-card/50 backdrop-blur-sm p-6 rounded-lg">
                 <h3 className="font-mono text-lg mb-4">Team ({team.length} members)</h3>
                 <div className="space-y-2">
-                  {team.map((member, index) => (
+                  {team.map((member) => (
                     <div key={member.id} className="flex justify-between text-sm">
-                      <span>{member.role === "founder" ? "Founder" : `Editor ${index}`}</span>
+                      <span>{member.role === "founder" ? "Founder" : "Editor"}</span>
                       <span className="text-muted-foreground">{member.wallet || "No wallet set"}</span>
                     </div>
                   ))}
