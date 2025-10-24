@@ -421,12 +421,18 @@ function NewIssueWizardContent() {
       }
 
       // Step 5: Redirect to success page with magazine details
-      const successUrl = new URL('/success', window.location.origin);
+      console.log('🚀 About to redirect with slug:', actualSlug);
+      console.log('🚀 Magazine from API:', magazine);
+      
+      const successUrl = new URL(`/${actualSlug}/success`, window.location.origin);
       successUrl.searchParams.set('magazine', magazine.name);
       successUrl.searchParams.set('issue', `Issue #1: ${scrapedEventData.title}`);
       successUrl.searchParams.set('slug', actualSlug);
       
-      router.push(successUrl.pathname + successUrl.search);
+      const finalUrl = successUrl.pathname + successUrl.search;
+      console.log('🚀 Final redirect URL:', finalUrl);
+      
+      router.push(finalUrl);
     } catch (error) {
       console.error('Error creating magazine:', error);
       alert(error instanceof Error ? error.message : 'Failed to create magazine. Please try again.');

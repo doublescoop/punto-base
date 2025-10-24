@@ -35,9 +35,9 @@ export function GlobalHeader() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 max-w-screen-2xl items-center">
-        <div className="mr-4 flex">
-          <Link href="/" className="mr-6 flex items-center space-x-2">
-            <span className="font-mono font-bold text-lg">PUNTO</span>
+        <div className="mr-4 pl-6 flex">
+          <Link href="/" className="mr-6 flex items-center space-x-3">
+            <span className="font-display font-bold text-xl">PUNTO</span>
           </Link>
           <nav className="flex items-center space-x-6 text-sm font-medium">
             <Link
@@ -47,7 +47,7 @@ export function GlobalHeader() {
               Open Calls
             </Link>
             <Link
-              href="/new"
+              href="/"
               className="transition-colors hover:text-foreground/80 text-foreground/60"
             >
               Create Magazine

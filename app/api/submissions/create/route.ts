@@ -26,7 +26,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/client';
 
 
-export const runtime = 'edge';
+// export const runtime = 'edge';
 
 interface CreateSubmissionRequest {
   topicId: string;

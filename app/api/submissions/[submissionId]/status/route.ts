@@ -22,7 +22,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/client';
 import type { Database } from '@/database.types';
 
-export const runtime = 'edge';
+// export const runtime = 'edge';
 
 type SubmissionUpdate = Database['public']['Tables']['submissions']['Update'];
 type SubmissionRow = Database['public']['Tables']['submissions']['Row'];

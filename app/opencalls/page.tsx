@@ -24,7 +24,7 @@ interface Submission {
   author: string;
 }
 
-const openCalls: OpenCall[] = [
+const mockOpenCalls: OpenCall[] = [
   {
     id: "1",
     title: "Fragments of Urban Decay",
@@ -170,6 +170,43 @@ function OpenCallsPageContent() {
   const { setMiniAppReady, isMiniAppReady } = useMiniKit();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [openCalls, setOpenCalls] = useState<OpenCall[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch real data from API
+  useEffect(() => {
+    async function fetchOpenCalls() {
+      try {
+        const response = await fetch('/api/opencalls');
+        const data = await response.json();
+        
+        console.log('API response:', data);
+        if (data.success) {
+          // Convert API data to OpenCall format
+          const formattedCalls = data.openCalls?.map((call: any) => ({
+            id: call.id,
+            title: call.title,
+            magazine: call.magazine.name,
+            dueDate: call.dueDate,
+            bounty: `$${(call.bountyAmount / 100).toFixed(0)}`,
+            category: call.format,
+          })) || [];
+          console.log('Formatted calls:', formattedCalls);
+          setOpenCalls(formattedCalls);
+        } else {
+          console.error('API error:', data.error);
+        }
+      } catch (err) {
+        console.error('Failed to fetch open calls:', err);
+        // Fallback to mock data
+        setOpenCalls(mockOpenCalls);
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    fetchOpenCalls();
+  }, []);
 
   useEffect(() => {
     if (!isMiniAppReady) {
@@ -386,7 +423,11 @@ function OpenCallsPageContent() {
 
         {/* Grid of Open Calls */}
         <main className="w-full px-6 lg:px-12 py-12">
-          {filteredCalls.length === 0 ? (
+          {loading ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">Loading open calls...</p>
+            </div>
+          ) : filteredCalls.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-muted-foreground">No open calls match your filters.</p>
             </div>

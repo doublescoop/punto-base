@@ -2,173 +2,398 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowRight, CheckCircle, BookOpen, Users, DollarSign } from "lucide-react";
+import { ArrowRight, CheckCircle, BookOpen, Users, DollarSign, Copy, ExternalLink } from "lucide-react";
 import { useAccount } from "wagmi";
-import { LiquidGlass } from "../../components/LiquidGlass";
+import { LiquidGlass } from "../../../components/LiquidGlass";
+import { toast } from "sonner";
 
-function SuccessContent() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const { address } = useAccount();
-  const [magazineData, setMagazineData] = useState<any>(null);
+// Mock data - in real app this would come from API
+const mockMagazineData = {
+  id: "magazine-123",
+  name: "NoirCon 3: For Privacy Developers",
+  founderName: "Alex Chen",
+  openCalls: [
+    {
+      id: "1",
+      title: "I'm going to remember this quote forever:",
+      format: "short",
+      slotsNeeded: 5,
+      bountyAmount: 1,
+      dueDate: "2025-01-15",
+      submissionsCount: 2
+    },
+    {
+      id: "2", 
+      title: "This photo from the event deserves to be seen!",
+      format: "image",
+      slotsNeeded: 5,
+      bountyAmount: 1,
+      dueDate: "2025-01-15",
+      submissionsCount: 1
+    },
+    {
+      id: "3",
+      title: "Your thoughts on....'___'?",
+      format: "long",
+      slotsNeeded: 3,
+      bountyAmount: 5,
+      dueDate: "2025-01-15",
+      submissionsCount: 0
+    }
+  ],
+  publishDate: "2025-01-18T18:00:00Z"
+};
 
-  const magazineName = searchParams.get('magazine');
-  const issueTitle = searchParams.get('issue');
-  const slug = searchParams.get('slug');
+// Countdown Timer Component
+const CountdownTimer = ({ targetDate }: { targetDate: string }) => {
+  const [timeLeft, setTimeLeft] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0
+  });
 
   useEffect(() => {
-    // If we have magazine data in URL params, we could fetch full details
-    // For now, just use the URL params
-    if (magazineName && issueTitle) {
-      setMagazineData({
-        name: magazineName,
-        issueTitle: issueTitle,
-        slug: slug
-      });
-    }
-  }, [magazineName, issueTitle, slug]);
+    const calculateTimeLeft = () => {
+      const now = new Date().getTime();
+      const target = new Date(targetDate).getTime();
+      const difference = target - now;
+
+      if (difference > 0) {
+        setTimeLeft({
+          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+          minutes: Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60)),
+          seconds: Math.floor((difference % (1000 * 60)) / 1000)
+        });
+      }
+    };
+
+    calculateTimeLeft();
+    const timer = setInterval(calculateTimeLeft, 1000);
+
+    return () => clearInterval(timer);
+  }, [targetDate]);
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="w-full px-6 lg:px-12 py-16">
-        <div className="max-w-4xl mx-auto">
-          {/* Success Header */}
-          <div className="text-center mb-12">
-            <LiquidGlass size={120} tint="rgba(34, 197, 94, 0.15)" className="mx-auto mb-6">
-              <CheckCircle className="w-12 h-12 text-green-600" />
-            </LiquidGlass>
-            
-            <h1 className="font-mono text-4xl mb-4 tracking-tight">
-              🎉 Magazine Created Successfully!
-            </h1>
-            
-            <p className="text-xl text-muted-foreground mb-2">
-              Your collaborative magazine is now live and ready for submissions.
-            </p>
-            
-            {magazineData && (
-              <div className="bg-card/50 backdrop-blur-sm p-6 rounded-lg mt-6 max-w-2xl mx-auto">
-                <h2 className="font-mono text-2xl mb-2">{magazineData.name}</h2>
-                <p className="text-muted-foreground mb-4">{magazineData.issueTitle}</p>
-                {address && (
-                  <div className="text-sm text-muted-foreground">
-                    <span>Founded by: </span>
-                    <code className="bg-muted px-2 py-1 rounded">
-                      {address.slice(0, 6)}...{address.slice(-4)}
-                    </code>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+    <div className="text-center space-y-2">
+      {/* <p className="font-handwriting text-xl text-white/90">Final zine publishes in:</p> */}
+      <div className="flex items-center justify-center gap-4">
+        <div className="text-center">
+          <div className="font-display text-6xl font-black text-white">{timeLeft.days}</div>
+          <div className="font-mono text-sm uppercase tracking-wider text-white/70">days</div>
+        </div>
+        <div className="font-display text-4xl text-white/50">:</div>
+        <div className="text-center">
+          <div className="font-display text-6xl font-black text-white">{timeLeft.hours}</div>
+          <div className="font-mono text-sm uppercase tracking-wider text-white/70">hours</div>
+        </div>
+        <div className="font-display text-4xl text-white/50">:</div>
+        <div className="text-center">
+          <div className="font-display text-6xl font-black text-white">{timeLeft.minutes}</div>
+          <div className="font-mono text-sm uppercase tracking-wider text-white/70">minutes</div>
+        </div>
+        <div className="font-display text-4xl text-white/50">:</div>
+        <div className="text-center">
+          <div className="font-display text-6xl font-black text-white">{timeLeft.seconds}</div>
+          <div className="font-mono text-sm uppercase tracking-wider text-white/70">seconds</div>
+        </div>
+        <p className="font-display text-6xl font-black text-white/90">TO PUBLISH</p>
+      </div>
+        {/* <p className="font-handwriting text-xl text-white/90">Final zine publishes in:</p> */}
 
-          {/* What Happens Next */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-            <div className="bg-card/50 backdrop-blur-sm p-6 rounded-lg text-center">
-              <LiquidGlass size={60} tint="rgba(59, 130, 246, 0.15)" className="mx-auto mb-4">
-                <BookOpen className="w-6 h-6 text-blue-600" />
-              </LiquidGlass>
-              <h3 className="font-mono text-lg mb-2">Open Calls Published</h3>
-              <p className="text-sm text-muted-foreground">
-                Your magazine topics are now visible on the Open Calls page for contributors to discover and submit to.
-              </p>
-            </div>
+    </div>
+  );
+};
 
-            <div className="bg-card/50 backdrop-blur-sm p-6 rounded-lg text-center">
-              <LiquidGlass size={60} tint="rgba(147, 51, 234, 0.15)" className="mx-auto mb-4">
-                <Users className="w-6 h-6 text-purple-600" />
-              </LiquidGlass>
-              <h3 className="font-mono text-lg mb-2">Contributors Can Submit</h3>
-              <p className="text-sm text-muted-foreground">
-                People can now find your topics, submit their content, and earn bounties for accepted submissions.
-              </p>
-            </div>
+// Main What's Next Section
+const WhatsNextSection = ({ magazineId }: { magazineId: string }) => {
+  const openCallsUrl = `${window.location.origin}/opencalls?magazine=${magazineId}`;
+  const [qrDownloaded, setQrDownloaded] = useState(false);
+  const [emailCopied, setEmailCopied] = useState(false);
+  
+  const handleDownloadQR = async () => {
+    try {
+      // TODO: Implement actual QR code generation and download
+      // For now, simulate download
+      setQrDownloaded(true);
+      setTimeout(() => setQrDownloaded(false), 2000);
+    } catch (err) {
+      console.error('Failed to download QR code:', err);
+    }
+  };
 
-            <div className="bg-card/50 backdrop-blur-sm p-6 rounded-lg text-center">
-              <LiquidGlass size={60} tint="rgba(34, 197, 94, 0.15)" className="mx-auto mb-4">
-                <DollarSign className="w-6 h-6 text-green-600" />
-              </LiquidGlass>
-              <h3 className="font-mono text-lg mb-2">Review & Pay Winners</h3>
-              <p className="text-sm text-muted-foreground">
-                You'll review submissions, select winners, and pay them directly from your magazine treasury.
-              </p>
-            </div>
-          </div>
+  const handleCopyEmail = async () => {
+    const emailTemplate = `Subject: Join our collective zine project!
 
-          {/* Quick Actions */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-            <button
-              onClick={() => router.push('/profile?tab=founder')}
-              className="bg-accent text-accent-foreground p-6 rounded-lg hover:bg-accent/90 transition-all text-left group"
-            >
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-mono text-lg">Manage Your Magazine</h3>
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </div>
-              <p className="text-sm opacity-90">
-                View submissions, manage issues, and track your magazine's performance from your founder dashboard.
-              </p>
-            </button>
+Hi everyone!
 
-            <button
-              onClick={() => router.push('/opencalls')}
-              className="bg-card/50 backdrop-blur-sm border border-border p-6 rounded-lg hover:bg-card/80 transition-all text-left group"
-            >
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-mono text-lg">See Your Open Calls</h3>
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Check how your magazine appears to potential contributors on the Open Calls page.
-              </p>
-            </button>
-          </div>
+I've created open calls for our post-event zine. Each contribution will be rewarded with USDC, and we'll publish the final zine soon.
 
-          {/* Magazine Details */}
-          {magazineData?.slug && (
-            <div className="bg-muted/30 backdrop-blur-sm p-6 rounded-lg text-center">
-              <h3 className="font-mono text-lg mb-2">Your Magazine URL</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Share this link with potential contributors:
-              </p>
-              <code className="bg-background px-4 py-2 rounded border text-sm">
-                {window.location.origin}/{magazineData.slug}
-              </code>
+Join the project here: ${openCallsUrl}
+
+Let's turn our shared experience into something lasting!
+
+Best regards`;
+
+    try {
+      await navigator.clipboard.writeText(emailTemplate);
+      setEmailCopied(true);
+      setTimeout(() => setEmailCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy email:', err);
+    }
+  };
+
+  return (
+    <div className="space-y-16">
+      {/* What's Next Title */}
+      <div>
+        <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-black text-white">
+          what&apos;s next?
+        </h1>
+      </div>
+      
+      {/* Step 1 - 3 Column Layout: #1 on left, A and B on right */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+        {/* Left Column: #1 and description */}
+        <div className="lg:col-span-3 flex flex-col justify-start">
+          <h2 className="font-display text-5xl sm:text-6xl lg:text-7xl font-black text-white leading-none mb-2">
+            #1.
+          </h2>
+          <h3 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-white leading-tight">
+            Share with participants
+          </h3>
+          <p className="font-handwriting text-base sm:text-lg text-white/80 italic mt-2">
+            I made it extra easy for you (wink wink)
+          </p>
+        </div>
+
+        {/* Right Columns: A and B side by side */}
+        <div className="lg:col-span-9 grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
+          {/* Section A: Download QR */}
+          <div className="space-y-6">
+            <div className="flex items-start justify-between gap-4">
+              <h4 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight">
+                Ⓐ Download this print/shareable QR
+              </h4>
               <button
-                onClick={() => {
-                  navigator.clipboard.writeText(`${window.location.origin}/${magazineData.slug}`);
-                  // Could add toast here
-                }}
-                className="ml-3 px-3 py-1 bg-accent/10 hover:bg-accent hover:text-accent-foreground transition-colors text-sm rounded"
+                onClick={handleDownloadQR}
+                className="flex-shrink-0 p-2 hover:bg-white/20 transition-colors mt-2"
               >
-                Copy
+                {qrDownloaded ? <Check className="w-6 h-6 text-white" /> : <Download className="w-6 h-6 text-white" />}
               </button>
             </div>
-          )}
-
-          {/* Navigation Footer */}
-          <div className="text-center mt-12 pt-8 border-t border-border/30">
-            <button
-              onClick={() => router.push('/')}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              ← Back to Home
-            </button>
+            
+            <div className="space-y-4">
+              <p className="font-display text-xl sm:text-2xl text-white leading-tight">
+                Post-event Zine &lt;3<br />Open Call
+              </p>
+              <p className="font-handwriting text-base text-white/80 italic">
+                (It means you can come yap, and we pay for it when featured!)
+              </p>
+              
+              {/* QR Code */}
+              <div className="bg-black p-8 flex items-center justify-center">
+                <div className="w-40 h-40 bg-white flex items-center justify-center">
+                  <div className="text-center">
+                    <p className="font-display text-2xl font-bold">QR</p>
+                    <p className="font-display text-2xl font-bold">Here</p>
+                  </div>
+                </div>
+              </div>
+              
+              <p className="font-mono text-sm text-white/90">
+                What did you learn, feel, think today?<br />
+                Let&apos;s make it into a zine together!
+              </p>
+            </div>
           </div>
+
+          {/* Section B: Copy Email */}
+          <div className="space-y-6">
+            <div className="flex items-start justify-between gap-4">
+              <h4 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight">
+                Ⓑ Copy-paste email the participants
+              </h4>
+              <button
+                onClick={handleCopyEmail}
+                className="flex-shrink-0 px-4 py-2 bg-white/20 text-white hover:bg-white/30 transition-colors flex items-center gap-2 mt-2"
+              >
+                {emailCopied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
+                <span className="text-sm font-mono">{emailCopied ? 'copied!' : 'copy'}</span>
+              </button>
+            </div>
+            
+            <div className="bg-[#8B0000] p-6 min-h-[400px]">
+              <pre className="font-mono text-sm text-white/90 whitespace-pre-wrap">
+{`Subject: Join our collective zine project!
+
+Hi everyone!
+
+I've created open calls for our post-event zine. Each contribution will be rewarded with USDC, and we'll publish the final zine soon.
+
+Join the project here: ${openCallsUrl}
+
+Let's turn our shared experience into something lasting!
+
+Best regards`}
+              </pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Step 2 */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+        <div className="lg:col-span-3 flex flex-col justify-start">
+          <h2 className="font-display text-5xl sm:text-6xl lg:text-7xl font-black text-white leading-none mb-2">
+            #2.
+          </h2>
+          <h3 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-white leading-tight">
+            Check Your Open Call Submissions and Curate!
+          </h3>
+          <p className="font-handwriting text-base sm:text-lg text-white/80 italic mt-2">
+            you can find this page in your profile - founder tab.
+          </p>
         </div>
       </div>
     </div>
   );
-}
+};
 
-export default function SuccessPage() {
+
+// Open Call Card Component
+const OpenCallCard = ({ openCall }: { openCall: {
+  id: string;
+  title: string;
+  format: string;
+  slotsNeeded: number;
+  bountyAmount: number;
+  dueDate: string;
+  submissionsCount: number;
+} }) => {
+  const formatLabels = {
+    short: "Short text (≤100 words)",
+    long: "Long text (100+ words)", 
+    image: "Image with caption",
+    open: "Open format"
+  };
+
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
+    <div className="bg-white/10 backdrop-blur-sm border border-white/20 p-6 space-y-4">
+      <div className="flex items-start justify-between">
+        <div className="flex-1">
+          <h4 className="font-display text-xl font-bold text-white mb-2">{openCall.title}</h4>
+          <div className="flex items-center gap-4 text-white/80">
+            <span className="font-mono text-sm">{formatLabels[openCall.format as keyof typeof formatLabels]}</span>
+            <span className="font-mono text-sm">{openCall.slotsNeeded} slots</span>
+            <span className="font-mono text-sm">{openCall.bountyAmount} USDC each</span>
+          </div>
+        </div>
+        <div className="text-right">
+          <div className="font-display text-2xl font-bold text-white">{openCall.submissionsCount}</div>
+          <div className="font-mono text-xs text-white/70 uppercase tracking-wider">submissions</div>
+        </div>
       </div>
-    }>
-      <SuccessContent />
-    </Suspense>
+      
+      <div className="w-full bg-white/20 h-2">
+        <div 
+          className="bg-white h-2 transition-all duration-300"
+          style={{ width: `${(openCall.submissionsCount / openCall.slotsNeeded) * 100}%` }}
+        />
+      </div>
+      
+      <div className="flex items-center justify-between text-white/70">
+        <span className="font-mono text-sm">Due: {new Date(openCall.dueDate).toLocaleDateString()}</span>
+        <span className="font-mono text-sm">{openCall.slotsNeeded - openCall.submissionsCount} slots remaining</span>
+      </div>
+    </div>
+  );
+};
+
+export default function MagazineSuccessPage() {
+  const router = useRouter();
+  const [magazineData, setMagazineData] = useState(mockMagazineData);
+
+  // Load magazine data from localStorage (set by the wizard)
+  useEffect(() => {
+    const storedData = localStorage.getItem('magazineData');
+    if (storedData) {
+      try {
+        const parsedData = JSON.parse(storedData);
+        setMagazineData({
+          ...mockMagazineData,
+          id: parsedData.id,
+          name: parsedData.eventData?.title || mockMagazineData.name,
+          founderName: parsedData.eventData?.organization?.name || mockMagazineData.founderName,
+          publishDate: parsedData.publishDate,
+          openCalls: parsedData.topics?.filter((topic: { isOpenCall: boolean }) => topic.isOpenCall)?.map((topic: { id: string; title: string; format: string; slotsNeeded: number; bountyAmount: number; dueDate: string }) => ({
+            id: topic.id,
+            title: topic.title,
+            format: topic.format,
+            slotsNeeded: topic.slotsNeeded,
+            bountyAmount: topic.bountyAmount,
+            dueDate: topic.dueDate,
+            submissionsCount: 0 // Will be updated from API in real app
+          })) || mockMagazineData.openCalls
+        });
+      } catch (error) {
+        console.error('Failed to parse magazine data:', error);
+      }
+    }
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-accent">
+      {/* Header */}
+      <div className="border-b border-white/20">
+        <div className="w-full px-6 lg:px-12 py-8">
+          <button
+            onClick={() => router.push("/profile")}
+            className="text-white/80 hover:text-white transition-colors mb-6 inline-flex items-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Profile
+          </button>
+
+          <div className="text-center space-y-6">
+            <div className="">
+              <h1 className="font-display text-5xl font-black text-white">
+                {magazineData.founderName}&apos;s zine
+              </h1>
+              <h1 className="font-display text-5xl font-black text-white">
+                 open calls are live!
+              </h1>
+              <p className="font-handwriting text-2xl text-white/90">
+                {magazineData.name}
+              </p>
+            </div>
+
+            <CountdownTimer targetDate={magazineData.publishDate} />
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="w-full px-6 lg:px-12 py-12 space-y-12">
+        {/* What's Next Section */}
+        <WhatsNextSection magazineId={magazineData.id} />
+
+        {/* Open Calls List */}
+        <div className="space-y-6">
+          <div className="text-center">
+            <h2 className="font-display text-4xl font-bold text-white mb-4">Your Open Calls</h2>
+            <p className="font-handwriting text-xl text-white/80">Live submissions from event participants</p>
+          </div>
+          
+          <div className="grid grid-cols-1 gap-6">
+            {magazineData.openCalls.map((openCall) => (
+              <OpenCallCard key={openCall.id} openCall={openCall} />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
