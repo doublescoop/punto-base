@@ -90,13 +90,17 @@ export async function POST(
     }
 
     // Get magazine by slug
+    console.log('[API] Looking up magazine by slug:', slug);
     const { data: magazine, error: magazineError } = await supabaseAdmin
       .from('magazines')
-      .select('id, status')
+      .select('id, slug')
       .eq('slug', slug)
       .single();
 
+    console.log('[API] Magazine query result:', { magazine, magazineError });
+
     if (magazineError || !magazine) {
+      console.error('[API] Magazine not found. Error:', magazineError);
       return NextResponse.json(
         {
           success: false,
@@ -105,6 +109,8 @@ export async function POST(
         { status: 404 }
       );
     }
+    
+    console.log('[API] Found magazine:', magazine.id);
 
     // Get the next issue number
     const { data: existingIssues } = await supabaseAdmin

@@ -104,6 +104,8 @@ export async function POST(request: NextRequest) {
       default_bounty_amount: body.defaultBountyAmount || 1000, // $10 default
     };
 
+    console.log('[API] Creating magazine with data:', { name: magazineData.name, slug: magazineData.slug });
+    
     const { data: magazine, error } = await supabaseAdmin
       .from('magazines')
       .insert(magazineData)
@@ -111,7 +113,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      console.error('Failed to create magazine:', error);
+      console.error('[API] Failed to create magazine:', error);
       return NextResponse.json(
         {
           success: false,
@@ -120,6 +122,8 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+    
+    console.log('[API] Magazine created successfully:', { id: magazine.id, slug: magazine.slug });
 
     // Return magazine data directly (types now match database)
     const responseMagazine: Magazine = magazine;

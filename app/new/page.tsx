@@ -326,6 +326,10 @@ function NewIssueWizardContent() {
       console.log('Created magazine:', { id: magazineId, slug: actualSlug, name: magazine.name });
       console.log('Using slug for issue creation:', actualSlug);
 
+      // Wait a moment for database to commit (potential race condition fix)
+      await new Promise(resolve => setTimeout(resolve, 500));
+      console.log('Waited 500ms for database commit');
+
       // Step 3: Create issue
       const issuePayload = {
         title: `Issue #1: ${scrapedEventData.title}`,
@@ -362,6 +366,9 @@ function NewIssueWizardContent() {
         body: JSON.stringify(issuePayload),
       });
 
+      console.log('Issue response status:', issueResponse.status, issueResponse.statusText);
+      console.log('Issue response headers:', Object.fromEntries(issueResponse.headers.entries()));
+      
       const issueData = await issueResponse.json();
       console.log('Issue creation response:', issueData);
 
