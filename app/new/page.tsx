@@ -537,7 +537,7 @@ function NewIssueWizardContent() {
     }
   }, [currentStep, steps]);
 
-  const renderStepContent = () => {
+  const renderStepContent = (): JSX.Element => {
     switch (currentStep) {
       case "event":
         return (
@@ -686,16 +686,25 @@ function NewIssueWizardContent() {
               )}
             </div>
           </div>
-        );
+    );
 
       case "topics":
         return (
-          <div className="space-y-6">
-            <div>
-              <p className="text-muted-foreground mb-6">
-                Define 5-6 topics for your magazine issue. Each topic can be an open call for submissions or internal content.
-              </p>
-            </div>
+          <div className="space-y-12">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+              <div className="lg:col-span-3 flex flex-col justify-start">
+                <h2 className="font-display text-5xl sm:text-6xl lg:text-7xl font-black text-foreground leading-none mb-2">
+                  #2.
+                </h2>
+                <h3 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground leading-tight">
+                  Topics
+                </h3>
+                <p className="font-handwriting text-base sm:text-lg text-muted-foreground italic mt-2" style={{ fontFamily: 'Mynerve, TeenageDreams, cursive' }}>
+                  Define 5-6 topics for your magazine issue. Each topic can be an open call for submissions or internal content.
+                </p>
+              </div>
+              
+              <div className="lg:col-span-9 space-y-8">
             <div className="space-y-4">
               {topics.map((topic, index) => (
                 <div key={topic.id} className="bg-card/50 backdrop-blur-sm p-4 rounded-lg">
@@ -805,17 +814,28 @@ function NewIssueWizardContent() {
               </button>
             </div>
           </div>
-        );
+        </div>
+      </div>
+    );
 
       case "theme":
         return (
-          <div className="space-y-6">
-            <div>
-              <h2 className="font-mono text-2xl mb-4">Theme & Colors</h2>
-              <p className="text-muted-foreground mb-6">
-                Choose your magazine&apos;s visual theme and accent colors.
-              </p>
-            </div>
+          <div className="space-y-12">
+            {/* Section Header with Big Typography */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+              <div className="lg:col-span-3 flex flex-col justify-start">
+                <h2 className="font-display text-5xl sm:text-6xl lg:text-7xl font-black text-foreground leading-none mb-2">
+                  #3.
+                </h2>
+                <h3 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground leading-tight">
+                  Theme & Colors
+                </h3>
+                <p className="font-handwriting text-base sm:text-lg text-muted-foreground italic mt-2" style={{ fontFamily: 'Mynerve, TeenageDreams, cursive' }}>
+                  Choose your magazine's visual theme and accent colors.
+                </p>
+              </div>
+              
+              <div className="lg:col-span-9 space-y-8">
             <div className="space-y-6">
               <div>
                 <h3 className="font-mono text-lg mb-4">Design Theme</h3>
@@ -861,22 +881,31 @@ function NewIssueWizardContent() {
               </div>
             </div>
           </div>
-        );
+        </div>
+      </div>
+    );
 
       case "treasury":
         return (
-          <div className="space-y-8">
-            <div>
-              <h2 className="font-mono text-2xl mb-4">Treasury Setup</h2>
-              <p className="text-muted-foreground mb-6">
-                {address 
-                  ? `Fund your magazine treasury to pay contributors. You need $${totalTopicBounties} USDC total for all topic bounties.`
-                  : ``
-                }
-              </p>
-            </div>
-
-            <div className="space-y-6">
+          <div className="space-y-12">
+            {/* Section Header with Big Typography */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+              <div className="lg:col-span-3 flex flex-col justify-start">
+                <h2 className="font-display text-5xl sm:text-6xl lg:text-7xl font-black text-foreground leading-none mb-2">
+                  #4.
+                </h2>
+                <h3 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground leading-tight">
+                  Treasury Setup
+                </h3>
+                <p className="font-handwriting text-base sm:text-lg text-muted-foreground italic mt-2" style={{ fontFamily: 'Mynerve, TeenageDreams, cursive' }}>
+                  {address 
+                    ? `Fund your treasury to pay contributors $${totalTopicBounties} USDC total`
+                    : `Connect wallet to setup treasury`
+                  }
+                </p>
+              </div>
+              
+              <div className="lg:col-span-9 space-y-8">
               {/* Wallet Connection Reminder */}
               {!address && (
                 <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 p-6 rounded-lg">
@@ -918,32 +947,38 @@ function NewIssueWizardContent() {
                 </div>
               )}
 
-              {/* Funding Requirements */}
-              <div className="bg-card/50 backdrop-blur-sm p-6 rounded-lg border border-border/50">
-                <h3 className="font-mono text-lg mb-4">Funding Required</h3>
-                 <div className="space-y-3">
-                   {/* Per-topic breakdown - only open call topics */}
-                   {topics.filter(topic => topic.isOpenCall).map((topic) => (
-                     <div key={topic.id} className="flex justify-between items-center text-sm">
-                       <span className="text-muted-foreground">
-                         Topic {topics.indexOf(topic) + 1}: {topic.slotsNeeded} × {topic.bountyAmount || 0} USDC
-                       </span>
-                       <span className="font-mono">{(topic.bountyAmount || 0) * topic.slotsNeeded} USDC</span>
-                     </div>
-                   ))}
-                  <div className="border-t border-border/50 pt-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Total Topic Bounties:</span>
-                      <span className="font-mono">{totalTopicBounties} USDC</span>
+              {/* Funding Requirements - Bold Box */}
+              <div className="bg-accent/10 border-2 border-accent p-8">
+                <div className="flex items-start justify-between gap-4 mb-6">
+                  <h4 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground leading-tight">
+                    💰 Funding Required
+                  </h4>
+                </div>
+                
+                <div className="space-y-4">
+                  {/* Per-topic breakdown - only open call topics */}
+                  {topics.filter(topic => topic.isOpenCall).map((topic, index) => (
+                    <div key={topic.id} className="flex justify-between items-center py-2 border-b border-accent/20">
+                      <span className="font-mono text-foreground">
+                        Topic #{index + 1}: {topic.slotsNeeded} × ${topic.bountyAmount || 0}
+                      </span>
+                      <span className="font-display text-xl font-bold text-accent">${(topic.bountyAmount || 0) * topic.slotsNeeded}</span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Recommended Buffer (10%):</span>
-                      <span className="font-mono">{Math.ceil(totalTopicBounties * 0.1)} USDC</span>
+                  ))}
+                  
+                  <div className="border-t-2 border-accent pt-4 mt-6">
+                    <div className="flex justify-between items-center py-2">
+                      <span className="font-mono text-lg text-foreground">Total Topic Bounties:</span>
+                      <span className="font-display text-2xl font-bold text-accent">${totalTopicBounties}</span>
                     </div>
-                    <div className="border-t border-border/50 pt-3">
-                      <div className="flex justify-between items-center font-medium">
-                        <span>Total Recommended:</span>
-                        <span className="font-mono text-lg">{totalTopicBounties + Math.ceil(totalTopicBounties * 0.1)} USDC</span>
+                    <div className="flex justify-between items-center py-2">
+                      <span className="font-mono text-lg text-foreground">Recommended Buffer (10%):</span>
+                      <span className="font-display text-2xl font-bold text-accent">${Math.ceil(totalTopicBounties * 0.1)}</span>
+                    </div>
+                    <div className="border-t-2 border-accent pt-4 mt-4">
+                      <div className="flex justify-between items-center">
+                        <span className="font-display text-2xl font-bold text-foreground">TOTAL RECOMMENDED:</span>
+                        <span className="font-display text-4xl font-black text-accent">${totalTopicBounties + Math.ceil(totalTopicBounties * 0.1)}</span>
                       </div>
                     </div>
                   </div>
@@ -993,19 +1028,29 @@ function NewIssueWizardContent() {
               )}
             </div>
           </div>
-        );
+        </div>
+    );
 
       case "team":
         return (
-          <div className="space-y-6">
-              <div>
-              <h2 className="font-mono text-2xl mb-4">Team Setup</h2>
-              <p className="text-muted-foreground mb-6">
-                Add team members who will help curate submissions. You need at least one Editor in addition to yourself as Founder.
-              </p>
-            </div>
+          <div className="space-y-12">
+            {/* Section Header with Big Typography */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+              <div className="lg:col-span-3 flex flex-col justify-start">
+                <h2 className="font-display text-5xl sm:text-6xl lg:text-7xl font-black text-foreground leading-none mb-2">
+                  #5.
+                </h2>
+                <h3 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground leading-tight">
+                  Team Setup
+                </h3>
+                <p className="font-handwriting text-base sm:text-lg text-muted-foreground italic mt-2" style={{ fontFamily: 'Mynerve, TeenageDreams, cursive' }}>
+                  Add team members who will help curate submissions. You need at least one Editor in addition to yourself as Founder.
+                </p>
+              </div>
+              
+              <div className="lg:col-span-9 space-y-8">
             <div className="space-y-4">
-              {team.map((member, index) => (
+              {team.map((member) => (
                 <div key={member.id} className="bg-card/50 backdrop-blur-sm p-4 rounded-lg">
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="font-mono">
@@ -1022,17 +1067,18 @@ function NewIssueWizardContent() {
                     )}
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <label className="block text-sm font-medium mb-1">Wallet Address</label>
-                <input
-                  type="text"
-                  placeholder="0x..."
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Wallet Address</label>
+                      <input
+                        type="text"
+                        placeholder="0x..."
                         value={member.wallet}
                         onChange={(e) => updateTeamMember(member.id, "wallet", e.target.value)}
                         className="w-full px-3 py-2 bg-background/50 backdrop-blur-sm border border-border/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
                       />
-              </div>
+                    </div>
                     <div>
-                    <label className="block text-sm font-medium mb-1">Nickname (Optional)</label>
+                      <label className="block text-sm font-medium mb-1">Nickname (Optional)</label>
                       <input
                         type="text"
                         placeholder="Display name..."
@@ -1051,7 +1097,7 @@ function NewIssueWizardContent() {
                         className="w-full px-3 py-2 bg-background/50 backdrop-blur-sm border border-border/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
                       />
                     </div>
-                
+                  </div>
                 </div>
               ))}
               <button
@@ -1063,7 +1109,8 @@ function NewIssueWizardContent() {
               </button>
             </div>
           </div>
-        );
+        </div>
+    );
 
       case "review":
         return (
@@ -1151,7 +1198,8 @@ function NewIssueWizardContent() {
               </div>
             </div>
           </div>
-        );
+        </div>
+    );
 
       default:
         return null;
@@ -1179,8 +1227,8 @@ function NewIssueWizardContent() {
               New Issue Wizard
             </div>
             <div className="space-y-2">
-              <h1 className="font-handwriting text-xl text-foreground">✨Let&apos;s make a zine with those who showed up for...</h1>
-              <p className="font-display text-3xl font-bold text-foreground">
+              <h1 className="font-handwriting text-3xl sm:text-4xl text-foreground italic" style={{ fontFamily: 'Mynerve, TeenageDreams, cursive' }}>✨Let&apos;s make a zine with those who showed up for...</h1>
+              <p className="font-display text-6xl sm:text-7xl lg:text-8xl font-black text-foreground leading-tight">
                 {scrapedEventData?.title || 'Your Event'}
               </p>
             </div>
