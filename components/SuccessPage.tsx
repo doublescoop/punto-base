@@ -102,9 +102,20 @@ const CountdownTimer = ({ targetDate }: { targetDate: string }) => {
 
 // Main What's Next Section
 const WhatsNextSection = ({ magazineId }: { magazineId: string }) => {
-  const openCallsUrl = `${window.location.origin}/opencalls?magazine=${magazineId}`;
+  const [openCallsUrl, setOpenCallsUrl] = useState('');
   const [qrDownloaded, setQrDownloaded] = useState(false);
   const [emailCopied, setEmailCopied] = useState(false);
+
+  useEffect(() => {
+    // Set URL only on client side
+    if (typeof window !== 'undefined') {
+      setOpenCallsUrl(`${window.location.origin}/opencalls?magazine=${magazineId}`);
+    } else {
+      // Fallback for SSR - use environment variable or default
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://punto.app';
+      setOpenCallsUrl(`${baseUrl}/opencalls?magazine=${magazineId}`);
+    }
+  }, [magazineId]);
   
   const handleDownloadQR = async () => {
     try {
