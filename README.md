@@ -15,7 +15,7 @@
 
 ---
 
-## 🎯 Problem Statement
+## Problem Statement
 
 After attending amazing events, communities want to:
 - **Capture collective memories** - But individual posts get lost in social media noise
@@ -30,11 +30,11 @@ After attending amazing events, communities want to:
 
 ---
 
-## 💡 Solution
+##  Solution
 
 **Punto** is a platform to create collaborative zines! This MVP is focused on post-irl-event zines. 
 
-### ✨ Key Features
+###  Key Features
 
 1. **Automated Event Scraping**
    - Import event details from Luma/Social Layer
@@ -59,7 +59,7 @@ After attending amazing events, communities want to:
 
 ---
 
-## 🏗️ Architecture Overview
+## Architecture Overview
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -124,7 +124,7 @@ After attending amazing events, communities want to:
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 ### Frontend
 - **Next.js 15** - React framework
@@ -150,7 +150,6 @@ After attending amazing events, communities want to:
 
 ---
 
-## 🚀 Getting Started
 
 ### Prerequisites
 ```bash
@@ -250,28 +249,6 @@ Key tables (see [`database.types.ts`](database.types.ts) for full schema):
 
 ---
 
-## 🎨 Unique Value Proposition
-
-### What Makes Punto Different?
-
-1. **Auto-Payment on Approval** 
-   - No manual payment coordination
-   - Trustless escrow
-   - Instant contributor payouts
-
-2. **Event-First Design**
-   - Scrapes event data automatically
-   - Pre-generates relevant topics
-   - Captures collective memory
-
-3. **Onchain Editorial Process**
-   - Transparent voting
-   - Verifiable decisions
-   - Permanent record
-
-4. **Basenames Native**
-   - Human-readable throughout
-   - Build contributor reputation
 
 
 ---
