@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Lock, Copy, FileText, BookOpen, Users, Briefcase, ArrowRight, Plus, TrendingUp, Clock, DollarSign, Settings, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
@@ -138,7 +138,7 @@ const mockUserData = {
   ],
 };
 
-export default function ProfilePage() {
+function ProfilePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { address, isConnecting, isReconnecting } = useAccount();
@@ -903,5 +903,13 @@ I'll continue from where I left off, completing the profile page implementation:
         )}
       </div>
     </div>
+  );
+}
+
+export default function ProfilePage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading...</div>}>
+      <ProfilePageContent />
+    </Suspense>
   );
 }

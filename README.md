@@ -1,5 +1,6 @@
 # Punto - 
 
+## hackathon submissions: 
 [![Base](https://img.shields.io/badge/Built%20on-Base-0052FF)](https://base.org)
 [![Basenames](https://img.shields.io/badge/Integrated-Basenames-0052FF)](https://www.base.org/names)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
@@ -22,11 +23,10 @@ After attending amazing events, communities want to:
 - **Create lasting artifacts** - But traditional publishing is slow and centralized
 
 **Current Pain Points:**
-1. Event organizers manually collect submissions via Google Forms
-2. Payment promises are often forgotten or delayed
+1. Event organizers manually collect submissions via Google Forms or use $2k/yr outdated software
+2. Payment promises are often forgotten or delayed (see screenshot in devpost!)
 3. No transparent editorial process
-4. Final publications live on centralized platforms
-5. Contributors have no onchain proof of their work
+4. Bored artsy kids don't have tools to create a curation together online with monetization. (=me and my friends need it)
 
 ---
 
@@ -214,32 +214,6 @@ npm run dev
 Open [http://localhost:3000](http://localhost:3000)
 
 
----
-
-## 🎬 Demo Flow
-
-### 1. Create Magazine (Founder)
-1. Connect wallet (doublescoop.base.eth)
-2. Paste Luma event URL
-3. Auto-scrape event details
-4. Customize submission topics
-5. Deploy escrow contract
-6. Deposit bounty funds
-
-### 2. Submit Content (Contributor)
-1. Browse open calls
-2. Select topic
-3. Submit content (text/image)
-4. Wait for editorial review
-
-### 3. Review & Pay (Editor)
-1. View submissions
-2. Vote to approve
-3. **Payment auto-releases onchain** ✨
-4. Contributor receives funds instantly
-
----
-
 ## 📊 Database Schema
 
 Key tables (see [`database.types.ts`](database.types.ts) for full schema):
@@ -265,6 +239,8 @@ Key tables (see [`database.types.ts`](database.types.ts) for full schema):
 - Transaction signing
 - Identity management
 - Basename resolution
+- (post-hackathon) 401x
+- (post-hackathon) Miniapp share on Farcaster to join Zine making open calls
 
 ### Smart Contracts
 - Deployed on Base Sepolia testnet
@@ -274,53 +250,11 @@ Key tables (see [`database.types.ts`](database.types.ts) for full schema):
 
 ---
 
-## 🎯 Hackathon Submission
-
-### ✅ Requirements Met
-
-- [x] **Functioning onchain app** - Live at punto-base.vercel.app
-- [x] **Open-source repo** - This repository
-- [x] **Base testnet deployment** - Contract at `0x...`
-- [x] **1+ testnet transactions** - See transaction hashes below
-- [x] **Basenames integration** - Display and payment support
-- [x] **Base Account integration** - OnchainKit wallet
-
-### 📹 Demo Video
-
-**Video Link:** [YouTube/Loom Link] *(Update after recording)*
-
-**Contents:**
-- 0:00 - Introduction & Problem Statement
-- 0:30 - Solution Overview
-- 1:00 - Live Demo (Create Magazine)
-- 2:00 - Smart Contract Interaction
-- 3:00 - Payment Auto-Release
-- 3:30 - Architecture Overview
-- 4:00 - Conclusion
-
-### 🔗 Deployment Proof
-
-**Contract Address:** `0x...` *(Update after deployment)*  
-**Deployer:** `doublescoop.base.eth`  
-**Network:** Base Sepolia (Chain ID: 84532)
-
-**Transaction Hashes:**
-1. Contract Deployment: `0x...`
-2. Deposit Funds: `0x...`
-3. Register Submission: `0x...`
-4. Vote & Auto-Payment: `0x...`
-
-**BaseScan Links:**
-- Contract: https://sepolia.basescan.org/address/0x...
-- Transactions: https://sepolia.basescan.org/tx/0x...
-
----
-
 ## 🎨 Unique Value Proposition
 
 ### What Makes Punto Different?
 
-1. **Auto-Payment on Approval** ← Most important!
+1. **Auto-Payment on Approval** 
    - No manual payment coordination
    - Trustless escrow
    - Instant contributor payouts
@@ -338,29 +272,7 @@ Key tables (see [`database.types.ts`](database.types.ts) for full schema):
 4. **Basenames Native**
    - Human-readable throughout
    - Build contributor reputation
-   - Onchain identity
 
----
-
-## 🎯 Target Customer Profile
-
-### Primary: Event Organizers
-- Run 10-100 person events
-- Want to capture collective experience
-- Have small budget for contributor rewards
-- Value transparency and automation
-
-### Secondary: Community Leaders
-- Manage online communities
-- Run regular activities/challenges
-- Want to reward active members
-- Need trustless payment system
-
-### Use Cases
-- Post-conference zines
-- Hackathon recap magazines
-- Community challenge collections
-- Event memory books
 
 ---
 
@@ -386,39 +298,11 @@ Key tables (see [`database.types.ts`](database.types.ts) for full schema):
 - [ ] Cross-chain support
 - [ ] AI-assisted curation
 
----
-
-## 🤝 Contributing
-
-Contributions welcome! Please:
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
 
 ---
 
 ## 📄 License
 
 MIT License - see [LICENSE](LICENSE) file
-
----
-
-## 🙏 Acknowledgments
-
-- **Base** - For the amazing L2 infrastructure
-- **Coinbase** - For OnchainKit and Basenames
-- **Supabase** - For the database platform
-- **Luma** - For event data API
-
----
-
-## 📞 Contact
-
-- **Twitter:** [@yourhandle]
-- **Email:** your@email.com
-- **Discord:** [Join our server]
-
----
 
 **Built with ❤️ on Base for Base Build Hackathon**

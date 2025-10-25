@@ -72,14 +72,15 @@ export function createMagazineTreasury(
  * This would replace the simple address generation above
  */
 export async function deployMagazineTreasuryContract(
-  _founderAddress: string,
-  _magazineName: string
+  founderAddress: string,
+  magazineName: string
 ): Promise<string> {
-  // TODO: Deploy actual smart contract treasury
+  // TODO: Deploy actual smart contract treasury using founderAddress and magazineName
   // - Multi-signature capability
   // - Team member management
   // - Automatic payment distribution
   // - Governance features
   
+  console.log(`Future implementation: Deploy treasury for ${magazineName} with founder ${founderAddress}`);
   throw new Error('Smart contract treasury deployment not implemented in MVP');
 }
