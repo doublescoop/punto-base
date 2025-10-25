@@ -1,9 +1,26 @@
 @import "tailwindcss";
 
+/* Local font face for Teenage Dreams as fallback */
+@font-face {
+  font-family: 'TeenageDreams';
+  src: url('/TeenageDreamsFont-Demo-Bold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'TeenageDreams';
+  src: url('/TeenageDreamsFont-Demo-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme {
   /* Fonts */
   --font-display: "Gasoek One", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-handwriting: "Mynerve", cursive;
+  --font-handwriting: var(--font-mynerve), "TeenageDreams", "Mynerve", cursive;
   --font-mono: "Helvetica Neue", "Gasoek One", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
@@ -67,7 +84,7 @@
   }
 
   .font-handwriting {
-    font-family: var(--font-handwriting);
+    font-family: var(--font-mynerve), "TeenageDreams", "Mynerve", cursive !important;
   }
 
   .font-display {

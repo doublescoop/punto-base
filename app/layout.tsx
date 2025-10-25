@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Source_Code_Pro } from "next/font/google";
+import { Inter, Source_Code_Pro, Mynerve } from "next/font/google";
 import { minikitConfig } from "@/minikit.config";
 import { RootProvider } from "./rootProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -38,6 +38,12 @@ const sourceCodePro = Source_Code_Pro({
   subsets: ["latin"],
 });
 
+const mynerve = Mynerve({
+  variable: "--font-mynerve",
+  subsets: ["latin"],
+  weight: "400",
+});
+
 
 
 export default function RootLayout({
@@ -52,12 +58,14 @@ export default function RootLayout({
           <link rel="icon" href="/favicon.ico" />
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+          <link href="https://fonts.googleapis.com/css2?family=Mynerve&display=swap" rel="stylesheet" />
         </head>
         <body
           className={cn(
             "min-h-screen bg-background font-sans antialiased",
             inter.variable,
-            sourceCodePro.variable
+            sourceCodePro.variable,
+            mynerve.variable
           )}
         >
           <ThemeProvider

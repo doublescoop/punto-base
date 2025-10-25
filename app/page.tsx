@@ -66,7 +66,7 @@ export default function Home() {
                 <h1 className="headline-bold text-foreground">
                 PUNTO
                 </h1>
-                <p className="subtitle-artistic">
+                <p className="subtitle-artistic" style={{ fontFamily: 'Mynerve, TeenageDreams, cursive' }}>
                   make zine, we write each line at punto de reunión.
                 </p>
                 <p className="text-clean text-lg text-muted-foreground max-w-md leading-relaxed">

@@ -435,9 +435,21 @@ function NewIssueWizardContent() {
       successUrl.searchParams.set('issue', `Issue #1: ${scrapedEventData.title}`);
       successUrl.searchParams.set('slug', actualSlug);
       
+      // Persist minimal data for success page display
+      try {
+        const successData = {
+          id: magazineId,
+          eventData: scrapedEventData,
+          publishDate,
+          topics,
+        };
+        localStorage.setItem('magazineData', JSON.stringify(successData));
+      } catch (e) {
+        console.warn('Unable to persist success data to localStorage:', e);
+      }
+      
       const finalUrl = successUrl.pathname + successUrl.search;
       console.log('🚀 Final redirect URL:', finalUrl);
-      
       router.push(finalUrl);
     } catch (error) {
       console.error('Error creating magazine:', error);
