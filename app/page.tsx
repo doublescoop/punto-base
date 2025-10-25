@@ -10,6 +10,9 @@ export default function Home() {
   const { setMiniAppReady, isMiniAppReady } = useMiniKit();
   const router = useRouter();
   const [eventUrl, setEventUrl] = useState("");
+  
+  // Toggle red background - set to true to enable, false to disable
+  const enableRedBackground = true;
 
   useEffect(() => {
     if (!isMiniAppReady) {
@@ -48,11 +51,23 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen gallery-clean">
+    <div className={`min-h-screen gallery-clean ${enableRedBackground ? 'bg-red-600' : ''}`}>
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-[0.03]">
+        {/* Background Image */}
+        <div className="absolute inset-0">
+          <div 
+            className="absolute inset-0 bg-center bg-no-repeat bg-contain opacity-30"
+            style={{
+              backgroundImage: `url('/punto-bg-tmp.png')`,
+              backgroundPosition: 'center center',
+              backgroundSize: 'contain'
+            }}
+          />
+        </div>
+        
+        {/* Background Pattern Overlay */}
+        <div className="absolute inset-0 opacity-[0.02]">
           <div className="absolute inset-0" style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23dc2626' fill-opacity='0.4'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
           }} />
@@ -103,18 +118,18 @@ export default function Home() {
                     placeholder="https://lu.ma/event or https://sociallayer.io/event/..."
                     value={eventUrl}
                     onChange={(e) => setEventUrl(e.target.value)}
-                    className="flex-1 px-4 py-4 bg-background border-2 border-border focus:border-accent focus:outline-none text-base"
+                    className="flex-1 px-4 py-4 bg-background border-2 border-border focus:border-accent focus:outline-none text-muted-foreground"
                   />
                   <button
                     onClick={handleStartZine}
                     disabled={!eventUrl.trim()}
                     className="bg-accent text-white px-6 py-4 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-mono text-sm uppercase tracking-wider"
                   >
-                    Start
+                    Start 
                   </button>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Supports Luma, SocialLayer, and other event platforms
+                  Supports Luma and SocialLayer for now
                 </p>
               </div>
 
@@ -145,7 +160,7 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border/20 bg-background/50 backdrop-blur-sm">
+      <footer className={`border-t border-border/20 backdrop-blur-sm ${enableRedBackground ? 'bg-red-600/50' : 'bg-background/50'}`}>
         <div className="w-full px-6 lg:px-12 py-16">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="space-y-4">

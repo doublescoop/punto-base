@@ -1,0 +1,3 @@
+# This directory will contain deployment records after contracts are deployed
+# Each deployment creates a JSON file with contract address and transaction hashes
+

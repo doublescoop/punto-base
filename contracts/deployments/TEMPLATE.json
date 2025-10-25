@@ -1,0 +1,42 @@
+{
+  "network": "base-sepolia",
+  "chainId": 84532,
+  "contractName": "MagazineEscrow",
+  "contractAddress": "0x...",
+  "deployer": "doublescoop.base.eth (0x...)",
+  "deployedAt": "2025-01-15T10:30:00Z",
+  "constructorArgs": {
+    "magazineId": "your-magazine-id",
+    "issueId": "your-issue-id",
+    "deadline": 1735689600,
+    "minVotesRequired": 1
+  },
+  "transactionHashes": {
+    "deploy": "0x...",
+    "deposit": "0x...",
+    "registerSubmission": "0x...",
+    "voteApprove": "0x..."
+  },
+  "blockNumber": 12345678,
+  "gasUsed": {
+    "deploy": "2000000",
+    "deposit": "50000",
+    "registerSubmission": "100000",
+    "voteApprove": "150000"
+  },
+  "basescanLinks": {
+    "contract": "https://sepolia.basescan.org/address/0x...",
+    "deploy": "https://sepolia.basescan.org/tx/0x...",
+    "deposit": "https://sepolia.basescan.org/tx/0x...",
+    "registerSubmission": "https://sepolia.basescan.org/tx/0x...",
+    "voteApprove": "https://sepolia.basescan.org/tx/0x..."
+  },
+  "testResults": {
+    "depositSuccessful": true,
+    "submissionRegistered": true,
+    "paymentReleased": true,
+    "contributorReceivedFunds": true
+  },
+  "notes": "Hackathon test deployment - all functions working as expected"
+}
+

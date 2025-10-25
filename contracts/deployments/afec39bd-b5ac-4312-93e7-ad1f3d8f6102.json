@@ -1,0 +1,48 @@
+{
+  "network": "base-sepolia",
+  "chainId": 84532,
+  "contractName": "MagazineEscrow",
+  "contractAddress": "0x5c7Ea1Cde2887c66E4FAb17b09EeF8267B0d5067",
+  "deployer": "0x1e4eC550facCd849E4099CA1FebbbB2163DaD6e5",
+  "deployedAt": "2025-01-15T10:30:00Z",
+  "constructorArgs": {
+    "magazineId": "d2e7565b-b6c7-4b53-a976-0daff89b06bc",
+    "issueId": "afec39bd-b5ac-4312-93e7-ad1f3d8f6102",
+    "deadline": 1761693480,
+    "minVotesRequired": 1
+  },
+  "transactionHashes": {
+    "deploy": "0x54545f19f736a6875419a8fef43da83a0be4b8be4ce13a3ef93ba0098b9772e6",
+    "deposit": "0x55be1cb6ed25279464f43092fea92497267bf267a77a9d31ff72a7300f4b8ff5",
+    "registerSubmission": "0x9aaf401fd7315bbf1f2001968c8263a06b11a1b5a60c7f2df9b34217ab66a904",
+    "voteApprove": "0xe2663a23ab39199f4fe65957b4f583031fc57c7601c65ff1d241e2b121b0f20b"
+  },
+  "blockNumber": 32793520,
+  "gasUsed": {
+    "deploy": "2207313",
+    "gasLimit": "3338999"
+  },
+  "basescanLinks": {
+    "contract": "https://base-sepolia.blockscout.com/address/0x5c7Ea1Cde2887c66E4FAb17b09EeF8267B0d5067",
+    "deploy": "https://base-sepolia.blockscout.com/tx/0x54545f19f736a6875419a8fef43da83a0be4b8be4ce13a3ef93ba0098b9772e6",
+    "deposit": "https://base-sepolia.blockscout.com/tx/0x55be1cb6ed25279464f43092fea92497267bf267a77a9d31ff72a7300f4b8ff5",
+    "registerSubmission": "https://base-sepolia.blockscout.com/tx/0x9aaf401fd7315bbf1f2001968c8263a06b11a1b5a60c7f2df9b34217ab66a904",
+    "voteApprove": "https://base-sepolia.blockscout.com/tx/0xe2663a23ab39199f4fe65957b4f583031fc57c7601c65ff1d241e2b121b0f20b"
+  },
+  "events": {
+    "EditorAdded": {
+      "logIndex": 39,
+      "editor": "0x1e4eC550facCd849E4099CA1FebbbB2163DaD6e5",
+      "transactionHash": "0x54545f19f736a6875419a8fef43da83a0be4b8be4ce13a3ef93ba0098b9772e6"
+    }
+  },
+  "testResults": {
+    "deploymentSuccessful": true,
+    "depositSuccessful": true,
+    "submissionRegistered": true,
+    "paymentReleased": true,
+    "contributorReceivedFunds": true
+  },
+  "notes": "Contract deployed successfully on Base mainnet. EditorAdded event emitted for founder. Next: deposit funds, register submission, test vote & payment."
+}
+
