@@ -310,7 +310,7 @@ function NewIssueWizardContent() {
         accentColors: selectedColors, // From theme step
         themeId: selectedTheme, // From theme step  
         treasuryAddress: magazineTreasury?.address || '', // From treasury step
-        founderNickname: team[0]?.nickname || null, // From team step
+        founderNickname: team[0]?.nickname || userData.user?.display_name || null, // Use team nickname, then user display_name (Basename), then null
       };
 
       const magazineResponse = await fetch('/api/magazines/create', {

@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Lock, Copy, FileText, BookOpen, Users, Briefcase, ArrowRight, Plus, TrendingUp, Clock, DollarSign, Settings } from "lucide-react";
+import { Lock, Copy, FileText, BookOpen, Users, Briefcase, ArrowRight, Plus, TrendingUp, Clock, DollarSign, Settings, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { useAccount } from "wagmi";
 import { SubmissionDetailDrawer } from "../../components/SubmissionDetailDrawer";
 import { LiquidGlass } from "../../components/LiquidGlass";
+import { BasenameDisplay } from "../../components/BasenameDisplay";
+import { useBasename } from "../../lib/hooks/useBasename";
 
 // Types for the mock data
 type SubmissionStatus = "IN_REVIEW" | "ACCEPTED" | "PUBLISHED" | "PAID" | "REJECTED";
@@ -233,9 +235,40 @@ export default function ProfilePage() {
     toast.success("Copied to clipboard");
   };
 
+  // Use Basename hook for display name
+  const { basename, isLoading: isBasenameLoading, refresh: refreshBasename } = useBasename(address);
+  
   // Get display info from wallet
   const displayAddress = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : "Not connected";
-  const displayName = address ? `User ${address.slice(0, 6)}` : "Connect Wallet";
+  const displayName = basename || (address ? `User ${address.slice(0, 6)}` : "Connect Wallet");
+  
+  // Handle refresh basename
+  const handleRefreshBasename = async () => {
+    if (!address) return;
+    
+    try {
+      const response = await fetch('/api/users/refresh-basename', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ walletAddress: address })
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        refreshBasename(); // Refresh the hook
+        if (data.updated) {
+          toast.success(`Display name updated to: ${data.user.display_name}`);
+        } else {
+          toast.info('No Basename found or display name unchanged');
+        }
+      } else {
+        toast.error(data.error || 'Failed to refresh Basename');
+      }
+    } catch (error) {
+      console.error('Error refreshing basename:', error);
+      toast.error('Failed to refresh Basename');
+    }
+  };
 
   // Show loading while wallet is connecting/reconnecting
   if (isConnecting || isReconnecting) {

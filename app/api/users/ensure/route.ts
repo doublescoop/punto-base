@@ -20,6 +20,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/client';
+import { resolveBasename } from '@/lib/basenames';
 
 export const runtime = 'edge';
 
@@ -73,10 +74,19 @@ export async function POST(request: NextRequest) {
     }
 
     // User doesn't exist, create one
-    const shortAddress = `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`;
+    // Try to resolve Basename for display name
+    let displayName: string;
+    try {
+      displayName = await resolveBasename(walletAddress);
+      console.log(`Resolved Basename for ${walletAddress}: ${displayName}`);
+    } catch (error) {
+      console.warn('Failed to resolve Basename, using fallback:', error);
+      displayName = `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`;
+    }
+
     const userData = {
       wallet_address: walletAddress,
-      display_name: shortAddress, // Default display name
+      display_name: displayName, // Basename or shortened address
       is_founder: false,
       is_editor: false,
       is_contributor: true, // Everyone starts as contributor
