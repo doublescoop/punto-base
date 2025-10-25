@@ -129,7 +129,7 @@ async function deployMagazineEscrow(params: DeploymentParams) {
   const balance = await publicClient.getBalance({ address: account.address });
   console.log(`💰 Deployer Balance: ${formatEther(balance)} ETH`);
   
-  if (balance === 0n) {
+  if (balance === BigInt(0)) {
     console.error('\n❌ Error: Deployer has 0 ETH. Get testnet ETH from Base Sepolia faucet:');
     console.log('   https://www.coinbase.com/faucets/base-ethereum-goerli-faucet');
     process.exit(1);

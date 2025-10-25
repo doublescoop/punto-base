@@ -205,7 +205,7 @@ export function SubmissionForm({ openCall, onBack, onSubmitted }: SubmissionForm
           <div className="space-y-4">
             <h2 className="font-mono text-3xl tracking-tight">✓ Submitted!</h2>
             <p className="text-muted-foreground leading-relaxed">
-              Thank you for contributing to {openCall.magazine}. Your work is now part of our collective review process. Every submission is read with care and consideration.
+              Thank you for contributing to {typeof openCall.magazine === 'string' ? openCall.magazine : openCall.magazine.name}. Your work is now part of our collective review process. Every submission is read with care and consideration.
             </p>
           </div>
           <div className="pt-4 space-y-3 border-t border-border">
@@ -245,7 +245,7 @@ export function SubmissionForm({ openCall, onBack, onSubmitted }: SubmissionForm
             
             <div className="space-y-2">
               <h1 className="font-mono text-4xl tracking-tight">{openCall.title}</h1>
-              <p className="text-muted-foreground">{openCall.magazine}</p>
+              <p className="text-muted-foreground">{typeof openCall.magazine === 'string' ? openCall.magazine : openCall.magazine.name}</p>
             </div>
           </div>
         </div>

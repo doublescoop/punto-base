@@ -176,7 +176,7 @@ export async function getEscrowSummary(contractAddress: Address): Promise<Escrow
     address: contractAddress,
     abi: MAGAZINE_ESCROW_ABI,
     functionName: 'getContractSummary',
-  });
+  } as any);
 
   return {
     founder: result[0],
@@ -201,7 +201,7 @@ export async function getSubmissionDetails(
     abi: MAGAZINE_ESCROW_ABI,
     functionName: 'getSubmissionDetails',
     args: [submissionId],
-  });
+  } as any);
 
   return {
     recipient: result[0],
@@ -229,7 +229,7 @@ export async function depositFunds(
     abi: MAGAZINE_ESCROW_ABI,
     functionName: 'deposit',
     value: parseEther(amountInEth),
-  });
+  } as any);
 
   // Wait for transaction confirmation
   const receipt = await publicClient.waitForTransactionReceipt({ hash });
@@ -261,7 +261,7 @@ export async function registerSubmission(
     abi: MAGAZINE_ESCROW_ABI,
     functionName: 'registerSubmission',
     args: [submissionId, recipientAddress, parseEther(bountyInEth)],
-  });
+  } as any);
 
   const receipt = await publicClient.waitForTransactionReceipt({ hash });
   
@@ -288,7 +288,7 @@ export async function voteApproveSubmission(
     abi: MAGAZINE_ESCROW_ABI,
     functionName: 'voteApprove',
     args: [submissionId],
-  });
+  } as any);
 
   const receipt = await publicClient.waitForTransactionReceipt({ hash });
   
@@ -296,7 +296,7 @@ export async function voteApproveSubmission(
   const paymentReleasedEvent = receipt.logs.find(log => {
     try {
       // Simple event signature check (PaymentReleased has 3 indexed params)
-      return log.topics.length === 3;
+      return (log as any).topics?.length === 3;
     } catch {
       return false;
     }
@@ -323,7 +323,7 @@ export async function withdrawUnusedFunds(
     address: contractAddress,
     abi: MAGAZINE_ESCROW_ABI,
     functionName: 'withdrawUnused',
-  });
+  } as any);
 
   const receipt = await publicClient.waitForTransactionReceipt({ hash });
   

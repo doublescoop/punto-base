@@ -9,10 +9,10 @@ import { supabaseAdmin } from '@/lib/supabase/client';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { topicId: string } }
+  { params }: { params: Promise<{ topicId: string }> }
 ) {
   try {
-    const { topicId } = params;
+    const { topicId } = await params;
 
     const { data: topic, error } = await supabaseAdmin
       .from('topics')

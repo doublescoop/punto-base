@@ -254,9 +254,7 @@ export default function PayWinnersPage() {
                       {/* @ts-expect-error - OnchainKit type issue with React 19 */}
                       <TransactionButton text="Pay This Winner" />
                       <TransactionStatus>
-                        {/* @ts-expect-error - OnchainKit type issue with React 19 */}
                         <TransactionStatusLabel />
-                        {/* @ts-expect-error - OnchainKit type issue with React 19 */}
                         <TransactionStatusAction />
                       </TransactionStatus>
                     </Transaction>
