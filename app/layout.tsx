@@ -8,25 +8,27 @@ import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/components/ui/utils";
 import "./globals.css";
 
-export async function generateMetadata(): Promise<Metadata> {
-  return {
-    title: minikitConfig.miniapp.name,
-    description: minikitConfig.miniapp.description,
-    other: {
-      "fc:miniapp": JSON.stringify({
-        version: minikitConfig.miniapp.version,
-        imageUrl: minikitConfig.miniapp.heroImageUrl,
-        button: {
-          title: `Launch ${minikitConfig.miniapp.name}`,
-          action: {
-            name: `Launch ${minikitConfig.miniapp.name}`,
-            type: "launch_miniapp",
-          },
+export const metadata: Metadata = {
+  title: minikitConfig.miniapp.name,
+  description: minikitConfig.miniapp.description,
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  },
+  other: {
+    "fc:miniapp": JSON.stringify({
+      version: minikitConfig.miniapp.version,
+      imageUrl: minikitConfig.miniapp.heroImageUrl,
+      button: {
+        title: `Launch ${minikitConfig.miniapp.name}`,
+        action: {
+          name: `Launch ${minikitConfig.miniapp.name}`,
+          type: "launch_miniapp",
         },
-      }),
-    },
-  };
-}
+      },
+    }),
+  },
+};
 
 const inter = Inter({
   variable: "--font-inter",
@@ -55,7 +57,6 @@ export default function RootLayout({
     <RootProvider>
       <html lang="en" suppressHydrationWarning>
         <head>
-          <link rel="icon" href="/favicon.ico" />
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
           <link href="https://fonts.googleapis.com/css2?family=Mynerve&display=swap" rel="stylesheet" />
